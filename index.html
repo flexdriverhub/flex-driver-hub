@@ -170,6 +170,10 @@ nav.tabs button.add{background:var(--accent);color:var(--accent-ink)}
 .steps{margin:0;padding-left:20px;display:grid;gap:4px;font-size:15px}
 .steps-title{font-weight:700;margin-top:4px}
 .mutedp{margin:0;color:var(--muted);font-size:15px}
+.install{border:2px solid var(--accent)}
+.install ol{margin:0;padding-left:22px;display:grid;gap:6px;font-size:16px}
+.qr{background:#fff;padding:12px;border-radius:12px;justify-self:center;line-height:0}
+.qr img,.qr canvas{width:200px;height:200px}
 .foot-note{font-size:13px;color:var(--muted);text-align:center;padding:0 8px}
 @media (prefers-reduced-motion: no-preference){
   .bar span{transition:width .4s ease}
@@ -245,6 +249,18 @@ const STRINGS = {
     csvTotal:"TOTAL", yes:"yes", no:"no",
     footer:"Manual entry only. Not connected to Amazon. Amazon's payout statements are the official record.",
     editedNoTime:"Edited",
+    inTitle:"Put Flex Hub on your home screen", inWhy:"It opens like a regular app and keeps your routes saved.",
+    inOneTap:"One tap and it's on your home screen.", inBtn:"Install app", inNotNow:"Not now", inDone:"Flex Hub is on your home screen. Open it from there.",
+    inChrome1:"Tap ⋮ at the top right.", inChrome2:"Tap Install app or Add to Home screen.", inChrome3:"Tap Install.",
+    inSamsung1:"Tap ☰ at the bottom right.", inSamsung2:"Tap Add page to.", inSamsung3:"Tap Home screen.",
+    inIos1:"Tap the Share button (square with an arrow up). On newer iPhones, tap ⋯ first.", inIos2:"Scroll down and tap Add to Home Screen.", inIos3:"Tap Add.",
+    inOpenSafari:"First, open this link in Safari. Copy it, open Safari, and paste it in the address bar.",
+    inOpenChrome:"First, open this link in Chrome. Copy it, open Chrome, and paste it in the address bar.",
+    inCopyLink:"Copy link", linkCopied:"Link copied",
+    inDesktop:"Open this on your phone. Scan this code with your phone's camera.",
+    inviteTitle:"Invite a driver", inviteHint:"Have them scan this code with their phone's camera, or send them the message.",
+    inviteCopy:"Copy invite message", inviteCopied:"Message copied. Paste it in a text.",
+    inviteMsg:"Hey, I made an app for Flex drivers. You type in each route and it tracks your hours toward 40, your day, week and month pay, and sets aside a tax reserve. English and Spanish. Your routes stay on your phone. Open this on your phone and it shows you how to add it to your home screen: {url}",
     shotBtn:"Fill from a screenshot", shotHint:"Screenshot the earnings screen in your Flex app, then pick it here. The app reads it on this phone. Nothing is sent to Amazon.",
     shotLoading:"Getting the screenshot reader ready…", shotReading:"Reading screenshot {i} of {n}… {p}%",
     shotNone:"Couldn't find a route in that screenshot. Try a screenshot of one day's earnings, or type the route in.",
@@ -335,6 +351,18 @@ const STRINGS = {
     csvTotal:"TOTAL", yes:"sí", no:"no",
     footer:"Solo registro manual. No está conectada a Amazon. Los estados de pago de Amazon son el registro oficial.",
     editedNoTime:"Editada",
+    inTitle:"Pon Flex Hub en tu pantalla de inicio", inWhy:"Se abre como una app normal y mantiene tus rutas guardadas.",
+    inOneTap:"Un toque y queda en tu pantalla de inicio.", inBtn:"Instalar app", inNotNow:"Ahora no", inDone:"Flex Hub está en tu pantalla de inicio. Ábrela desde ahí.",
+    inChrome1:"Toca ⋮ arriba a la derecha.", inChrome2:"Toca Instalar app o Agregar a la pantalla principal.", inChrome3:"Toca Instalar.",
+    inSamsung1:"Toca ☰ abajo a la derecha.", inSamsung2:"Toca Añadir página a.", inSamsung3:"Toca Pantalla de inicio.",
+    inIos1:"Toca el botón Compartir (cuadro con una flecha hacia arriba). En iPhones nuevos, toca ⋯ primero.", inIos2:"Desliza hacia abajo y toca Agregar a pantalla de inicio.", inIos3:"Toca Agregar.",
+    inOpenSafari:"Primero abre este enlace en Safari. Cópialo, abre Safari y pégalo en la barra de direcciones.",
+    inOpenChrome:"Primero abre este enlace en Chrome. Cópialo, abre Chrome y pégalo en la barra de direcciones.",
+    inCopyLink:"Copiar enlace", linkCopied:"Enlace copiado",
+    inDesktop:"Ábrela en tu teléfono. Escanea este código con la cámara de tu teléfono.",
+    inviteTitle:"Invitar a un conductor", inviteHint:"Pídele que escanee este código con la cámara de su teléfono, o mándale el mensaje.",
+    inviteCopy:"Copiar mensaje de invitación", inviteCopied:"Mensaje copiado. Pégalo en un texto.",
+    inviteMsg:"Hola, hice una app para conductores de Flex. Escribes cada ruta y lleva la cuenta de tus horas hacia 40, tu pago del día, la semana y el mes, y aparta una reserva para impuestos. En inglés y español. Tus rutas se quedan en tu teléfono. Ábrela en tu teléfono y te enseña cómo ponerla en tu pantalla de inicio: {url}",
     shotBtn:"Llenar desde una captura de pantalla", shotHint:"Toma una captura de la pantalla de ganancias en tu app de Flex y elígela aquí. La app la lee en este teléfono. No se envía nada a Amazon.",
     shotLoading:"Preparando el lector de capturas…", shotReading:"Leyendo captura {i} de {n}… {p}%",
     shotNone:"No se encontró ninguna ruta en esa captura. Prueba con una captura de las ganancias de un día o escribe la ruta.",
@@ -574,6 +602,7 @@ function viewHome(){
   const sub = t("weekOf", {start: fmtDate(p.weekStartIso, {month:"short", day:"numeric"}), end: fmtDate(end, {month:"short", day:"numeric"})});
   return header(t("appName"), sub) + `<main>
     ${banners()}
+    ${installCard("home")}
     <section class="hours" aria-live="polite">
       <div class="eyebrow">${esc(t("hoursEyebrow"))}</div>
       <div class="big num ${hl.over ? "over" : ""}">${esc(t(hl.over ? "hoursOver" : "hoursLeft", {n: hl.text}))}</div>
@@ -736,14 +765,14 @@ function viewSettings(){
       <label class="btn block filebtn">${esc(t("restoreBtn"))}<input type="file" id="restoreFile" accept=".csv,text/csv"></label>
       <p class="mutedp">${esc(t("restoreHint"))}</p>
     </section>
-    ${isInstalled() ? "" : `<section class="card" style="display:grid;gap:8px">
-      <h2 style="font-size:22px">${esc(t("installTitle"))}</h2>
-      <p class="mutedp">${esc(t("installWhy"))}</p>
-      <div class="steps-title">${esc(t("installIos"))}</div>
-      <ol class="steps"><li>${esc(t("installIos1"))}</li><li>${esc(t("installIos2"))}</li><li>${esc(t("installIos3"))}</li></ol>
-      <div class="steps-title">${esc(t("installAndroid"))}</div>
-      <ol class="steps"><li>${esc(t("installAndroid1"))}</li><li>${esc(t("installAndroid2"))}</li></ol>
-    </section>`}
+    ${installCard("settings")}
+    <section class="card" style="display:grid;gap:10px">
+      <h2 style="font-size:22px">${esc(t("inviteTitle"))}</h2>
+      <p class="mutedp">${esc(t("inviteHint"))}</p>
+      <div class="qr" data-qr="${esc(APP_URL)}"></div>
+      <p class="mutedp" style="text-align:center;overflow-wrap:anywhere">${esc(APP_URL)}</p>
+      <button type="button" class="btn primary block" data-act="copy-invite">${esc(t("inviteCopy"))}</button>
+    </section>
     <section class="card" style="display:grid;gap:10px">
       <h2 style="font-size:22px">${esc(t("checksTitle"))}</h2>
       <p style="margin:0;color:var(--muted);font-size:15px">${esc(t("checksHint"))}</p>
@@ -756,10 +785,65 @@ function viewSettings(){
 function isInstalled(){
   try { return window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; } catch(e) { return false; }
 }
+const APP_URL = "https://flexdriverhub.github.io/flex-driver-hub/";
+let installEvt = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; render(); });
+window.addEventListener("appinstalled", () => { installEvt = null; toast(t("inDone")); render(); });
+function device(){
+  const ua = navigator.userAgent || "";
+  const inApp = /FBAN|FBAV|Instagram|Snapchat|Line\/|GSA\/|; wv\)|TikTok/i.test(ua);
+  if (/iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1))
+    return { os:"ios", safari: !inApp && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua) };
+  if (/Android/i.test(ua)) return { os:"android", samsung: /SamsungBrowser/i.test(ua), inApp };
+  return { os:"desktop" };
+}
+const steps = keys => `<ol>${keys.map(k => `<li>${esc(t(k))}</li>`).join("")}</ol>`;
+function installCard(where){
+  if (isInstalled()) return "";
+  if (where === "home" && Store.prefs.installDismissed) return "";
+  const d = device();
+  let body = "";
+  const copyBtn = `<button type="button" class="btn block" data-act="copy-link">${esc(t("inCopyLink"))}</button>`;
+  if (d.os === "android" && installEvt){
+    body = `<p class="mutedp">${esc(t("inOneTap"))}</p><button type="button" class="btn primary block" data-act="install">${esc(t("inBtn"))}</button>`;
+  } else if (d.os === "android" && d.inApp){
+    body = `<p class="mutedp">${esc(t("inOpenChrome"))}</p>${copyBtn}`;
+  } else if (d.os === "android"){
+    body = d.samsung ? steps(["inSamsung1","inSamsung2","inSamsung3"]) : steps(["inChrome1","inChrome2","inChrome3"]);
+  } else if (d.os === "ios"){
+    body = (d.safari ? "" : `<p class="mutedp">${esc(t("inOpenSafari"))}</p>${copyBtn}`) + steps(["inIos1","inIos2","inIos3"]);
+  } else {
+    if (where === "home") return "";
+    body = `<p class="mutedp">${esc(t("inDesktop"))}</p><div class="qr" data-qr="${esc(APP_URL)}"></div><p class="mutedp" style="text-align:center;overflow-wrap:anywhere">${esc(APP_URL)}</p>`;
+  }
+  return `<section class="card install" style="display:grid;gap:10px">
+    <h2 style="font-size:22px">${esc(t("inTitle"))}</h2>
+    ${d.os === "desktop" ? "" : `<p class="mutedp">${esc(t("inWhy"))}</p>`}
+    ${body}
+    ${where === "home" ? `<button type="button" class="linkbtn" data-act="install-dismiss">${esc(t("inNotNow"))}</button>` : ""}
+  </section>`;
+}
+let qrLib = null;
+function fillQr(){
+  const boxes = document.querySelectorAll("[data-qr]:not([data-done])");
+  if (!boxes.length) return;
+  if (!qrLib) qrLib = new Promise((res, rej) => { const sc = document.createElement("script");
+    sc.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+    sc.onload = () => res(window.QRCode); sc.onerror = () => { qrLib = null; rej(); }; document.head.appendChild(sc); });
+  qrLib.then(Q => boxes.forEach(b => { if (b.dataset.done) return; b.dataset.done = "1";
+    new Q(b, { text: b.dataset.qr, width: 200, height: 200, correctLevel: Q.CorrectLevel.M }); }), () => {
+    boxes.forEach(b => { b.style.display = "none"; }); });
+}
+function copyText(text, okMsg){
+  try { navigator.clipboard.writeText(text).then(() => toast(okMsg), () => toast(text)); }
+  catch(e) { toast(text); }
+}
+
 function viewWelcome(){
   const lang = Store.settings.lang;
   return header(t("appName")) + `<div class="welcome">
     <p class="lede">${esc(t("wLede"))}</p>
+    ${installCard("welcome")}
     <button type="button" class="choice primary" data-act="mode" data-mode="real"><b>${esc(t("wReal"))}</b><span>${esc(t("wRealSub"))}</span></button>
     <button type="button" class="choice" data-act="mode" data-mode="demo"><b>${esc(t("wDemo"))}</b><span>${esc(t("wDemoSub"))}</span></button>
     <div class="seg" role="group" aria-label="${esc(t("sLang"))}">
@@ -822,11 +906,11 @@ function renderModal(){
 
 function render(){
   document.documentElement.lang = Store.settings.lang;
-  if (!Store.mode){ $app.innerHTML = viewWelcome(); $tabs.hidden = true; renderModal(); return; }
+  if (!Store.mode){ $app.innerHTML = viewWelcome(); $tabs.hidden = true; renderModal(); fillQr(); return; }
   $tabs.hidden = false;
   const v = ui.view;
   $app.innerHTML = v==="home" ? viewHome() : v==="routes" ? viewRoutes() : v==="form" ? viewForm() : v==="review" ? viewReview() : viewSettings();
-  renderTabs(); renderModal();
+  renderTabs(); renderModal(); fillQr();
 }
 
 let toastTimer;
@@ -932,6 +1016,10 @@ document.addEventListener("click", e => {
   else if (act === "week"){ const st = Number(el.dataset.step); ui.weekOffset = st === 0 ? 0 : Math.max(0, ui.weekOffset + st); render(); }
   else if (act === "cancel-review"){ ui.review = null; go("form"); }
   else if (act === "save-review"){ saveReview(); }
+  else if (act === "install"){ if (installEvt){ const ev = installEvt; installEvt = null; ev.prompt(); ev.userChoice.finally(() => render()); } }
+  else if (act === "install-dismiss"){ Store.setPrefs({ installDismissed: true }); render(); }
+  else if (act === "copy-link"){ copyText(APP_URL, t("linkCopied")); }
+  else if (act === "copy-invite"){ copyText(t("inviteMsg", { url: APP_URL }), t("inviteCopied")); }
   else if (act === "reset-demo"){ Store.resetDemo(); toast(t("resetDemoDone")); render(); }
   else if (act === "modal-cancel"){ ui.modal = null; renderModal(); }
   else if (act === "export"){ ui.csvOpen = true; render(); downloadCsv(); }
