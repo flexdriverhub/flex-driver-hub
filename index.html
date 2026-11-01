@@ -80,7 +80,7 @@ main{padding:16px;display:grid;gap:14px}
 .tot-grid .k{font-size:13px;color:var(--muted)}
 .tot-grid .v{font-size:19px;font-weight:600}
 .tot-grid .v.spend{color:var(--good)}
-.tot-foot{display:flex;gap:16px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:15px;color:var(--muted)}
+.tot-foot{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:15px;color:var(--muted)}
 .tot-foot b{color:var(--ink);font-weight:600}
 
 .btn{min-height:48px;padding:10px 18px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}
@@ -144,8 +144,8 @@ input[aria-invalid="true"]{border-color:var(--bad)}
 .checks-sum{font-weight:700}
 
 nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom))}
-nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1.2fr 1fr;gap:6px}
-nav.tabs button{min-height:56px;border:0;border-radius:12px;background:transparent;font-weight:600;font-size:14px;cursor:pointer;display:grid;place-items:center;gap:2px;color:var(--muted)}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1.25fr 1fr 1fr;gap:4px}
+nav.tabs button{min-height:56px;border:0;border-radius:12px;background:transparent;font-weight:600;font-size:13px;cursor:pointer;display:grid;place-items:center;gap:2px;color:var(--muted)}
 nav.tabs button svg{width:22px;height:22px}
 nav.tabs button[aria-current="page"]{color:var(--ink);background:color-mix(in srgb,var(--muted) 12%,transparent)}
 nav.tabs button.add{background:var(--accent);color:var(--accent-ink)}
@@ -174,6 +174,35 @@ nav.tabs button.add{background:var(--accent);color:var(--accent-ink)}
 .install ol{margin:0;padding-left:22px;display:grid;gap:6px;font-size:16px}
 .qr{background:#fff;padding:12px;border-radius:12px;justify-self:center;line-height:0}
 .qr img,.qr canvas{width:200px;height:200px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .dow{font-size:12px;font-weight:600;color:var(--muted);text-align:center;padding-bottom:2px}
+.cal button{min-height:54px;border-radius:10px;border:1px solid var(--line);background:var(--card);padding:4px 2px;display:grid;align-content:start;justify-items:center;gap:2px;cursor:pointer;font-variant-numeric:tabular-nums}
+.cal button .dn{font-size:13px;font-weight:600}
+.cal button .amt{font-size:11.5px;font-weight:700;color:var(--good)}
+.cal button.has{background:color-mix(in srgb,var(--accent) 18%,var(--card));border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+.cal button.out{opacity:.45}
+.cal button.today{outline:2px solid var(--road);outline-offset:-2px}
+.cal button[aria-pressed="true"]{outline:3px solid var(--accent);outline-offset:-3px}
+.month-nav{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.month-nav h2{font-size:24px}
+.month-nav .btn{min-width:48px;padding:6px 12px}
+.wk{display:grid;gap:10px}
+.wk.current{border:2px solid var(--accent)}
+.wk-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.wk-head h3{font-size:20px}
+.chip.cur{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.chip.best{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good);border-color:transparent}
+.vs{font-size:14px;font-weight:600}
+.vs.up{color:var(--good)} .vs.down{color:var(--bad)} .vs.same{color:var(--muted)}
+.minibar{height:8px;border-radius:4px;background:color-mix(in srgb,var(--muted) 18%,transparent);overflow:hidden}
+.minibar span{display:block;height:100%;background:var(--accent)}
+.minibar.over span{background:var(--bad)}
+.tot.tap{cursor:pointer}
+.tot.tap:hover{border-color:var(--accent)}
+.see{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-weight:700;font-size:15px}
+.see span:last-child{font-size:20px;line-height:1}
+.dayhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:6px}
+.dayhead h3{font-size:20px}
 .foot-note{font-size:13px;color:var(--muted);text-align:center;padding:0 8px}
 @media (prefers-reduced-motion: no-preference){
   .bar span{transition:width .4s ease}
@@ -249,6 +278,27 @@ const STRINGS = {
     csvTotal:"TOTAL", yes:"yes", no:"no",
     footer:"Manual entry only. Not connected to Amazon. Amazon's payout statements are the official record.",
     editedNoTime:"Edited",
+    navHistory:"History", seeRoutes:"See {routes}", back:"‹ Back", dayHead:"{routes} · {amt}",
+    fOdoStart:"Start odometer", fOdoEnd:"End odometer", fOdoHint:"Optional. Read it off your dashboard when you start and finish. Miles fills in by itself.",
+    errOdo:"End odometer has to be higher than start.", fGasRoute:"Gas for this route",
+    fGasRouteHint:"Optional. If you log fill-ups instead, leave this at 0.",
+    fuelBtn:"Add fill-up", fuelTitle:"Gas fill-ups", fuelAmount:"Amount paid", fuelGallons:"Gallons", fuelOdo:"Odometer",
+    fuelOptional:"Optional", fuelSave:"Save fill-up", fuelSaved:"Fill-up saved", fuelRecent:"Recent fill-ups", fuelNone:"No fill-ups yet.",
+    fuelDelTitle:"Delete this fill-up?", fuelDelBody:"{what} will be removed from your gas totals.", fuelDelBtn:"Delete fill-up", fuelDeleted:"Fill-up deleted",
+    afterGas:"After gas", gasShare:"Gas was {pct}% of gross",
+    insTitle:"What your numbers say", insHint:"Worked out on this phone from your own routes. Nothing is sent anywhere.",
+    insNeedMore:"Log a few more routes and tips will show up here.",
+    insBestTime:"Your best pay per hour is {best} blocks at {bestRate}/hr. Your lowest is {worst} blocks at {worstRate}/hr.",
+    insGas:"Gas took {pct}% of your gross in the week of {week}. Compare stations or block types if that keeps climbing.",
+    insGasOk:"Gas was {pct}% of your gross in the week of {week}.",
+    insMiles:"{n} of your last {m} routes have no miles. Miles are usually a driver's biggest tax deduction, so log them on every route.",
+    insMilesOk:"Every one of your last {m} routes has miles logged. That's the record a tax pro will ask for.",
+    insPerMile:"You're making {rate} per mile driven over your last {m} routes.",
+    bOvernight:"overnight (12–5 a.m.)", bMorning:"morning (5–11 a.m.)", bAfternoon:"afternoon (11 a.m.–5 p.m.)", bEvening:"evening (5 p.m.–12 a.m.)",
+    csvFuelHeaders:["fill_up_date","amount","gallons","odometer"], histTitle:"History", histSub:"Each week starts fresh on your week-start day. Past weeks are saved here.",
+    chipThisWeek:"This week", chipBest:"Best week", vsUp:"▲ {amt} vs. week before", vsDown:"▼ {amt} vs. week before", vsSame:"Same as week before",
+    weekHours:"{h} of {target} hours", dayTitle:"{date}", dayNone:"No routes this day.", dayTotal:"Day total",
+    prevMonth:"Previous month", nextMonth:"Next month", weeksHeading:"Weeks",
     inTitle:"Put Flex Hub on your home screen", inWhy:"It opens like a regular app and keeps your routes saved.",
     inOneTap:"One tap and it's on your home screen.", inBtn:"Install app", inNotNow:"Not now", inDone:"Flex Hub is on your home screen. Open it from there.",
     inChrome1:"Tap ⋮ at the top right.", inChrome2:"Tap Install app or Add to Home screen.", inChrome3:"Tap Install.",
@@ -351,6 +401,27 @@ const STRINGS = {
     csvTotal:"TOTAL", yes:"sí", no:"no",
     footer:"Solo registro manual. No está conectada a Amazon. Los estados de pago de Amazon son el registro oficial.",
     editedNoTime:"Editada",
+    navHistory:"Historial", seeRoutes:"Ver {routes}", back:"‹ Volver", dayHead:"{routes} · {amt}",
+    fOdoStart:"Odómetro al empezar", fOdoEnd:"Odómetro al terminar", fOdoHint:"Opcional. Léelo en el tablero al empezar y al terminar. Las millas se llenan solas.",
+    errOdo:"El odómetro al terminar tiene que ser mayor que al empezar.", fGasRoute:"Gasolina de esta ruta",
+    fGasRouteHint:"Opcional. Si registras tus cargas de gasolina, déjalo en 0.",
+    fuelBtn:"Agregar carga de gasolina", fuelTitle:"Cargas de gasolina", fuelAmount:"Monto pagado", fuelGallons:"Galones", fuelOdo:"Odómetro",
+    fuelOptional:"Opcional", fuelSave:"Guardar carga", fuelSaved:"Carga guardada", fuelRecent:"Cargas recientes", fuelNone:"Todavía no hay cargas.",
+    fuelDelTitle:"¿Eliminar esta carga?", fuelDelBody:"{what} se quitará de tus totales de gasolina.", fuelDelBtn:"Eliminar carga", fuelDeleted:"Carga eliminada",
+    afterGas:"Después de gasolina", gasShare:"La gasolina fue el {pct}% del bruto",
+    insTitle:"Lo que dicen tus números", insHint:"Calculado en este teléfono con tus propias rutas. No se envía nada.",
+    insNeedMore:"Registra algunas rutas más y aquí aparecerán consejos.",
+    insBestTime:"Tu mejor pago por hora es en bloques de {best}: {bestRate}/h. El más bajo es en bloques de {worst}: {worstRate}/h.",
+    insGas:"La gasolina se llevó el {pct}% de tu bruto en la semana del {week}. Compara gasolineras o tipos de bloque si sigue subiendo.",
+    insGasOk:"La gasolina fue el {pct}% de tu bruto en la semana del {week}.",
+    insMiles:"{n} de tus últimas {m} rutas no tienen millas. Las millas suelen ser la deducción más grande de un conductor, así que regístralas en cada ruta.",
+    insMilesOk:"Tus últimas {m} rutas tienen millas registradas. Ese es el registro que te pedirá un profesional de impuestos.",
+    insPerMile:"Estás ganando {rate} por milla manejada en tus últimas {m} rutas.",
+    bOvernight:"madrugada (12–5 a. m.)", bMorning:"mañana (5–11 a. m.)", bAfternoon:"tarde (11 a. m.–5 p. m.)", bEvening:"noche (5 p. m.–12 a. m.)",
+    csvFuelHeaders:["fecha_carga","monto","galones","odometro"], histTitle:"Historial", histSub:"Cada semana empieza de cero en tu día de inicio. Las semanas pasadas se guardan aquí.",
+    chipThisWeek:"Esta semana", chipBest:"Mejor semana", vsUp:"▲ {amt} vs. semana anterior", vsDown:"▼ {amt} vs. semana anterior", vsSame:"Igual que la semana anterior",
+    weekHours:"{h} de {target} horas", dayTitle:"{date}", dayNone:"No hay rutas este día.", dayTotal:"Total del día",
+    prevMonth:"Mes anterior", nextMonth:"Mes siguiente", weeksHeading:"Semanas",
     inTitle:"Pon Flex Hub en tu pantalla de inicio", inWhy:"Se abre como una app normal y mantiene tus rutas guardadas.",
     inOneTap:"Un toque y queda en tu pantalla de inicio.", inBtn:"Instalar app", inNotNow:"Ahora no", inDone:"Flex Hub está en tu pantalla de inicio. Ábrela desde ahí.",
     inChrome1:"Toca ⋮ arriba a la derecha.", inChrome2:"Toca Instalar app o Agregar a la pantalla principal.", inChrome3:"Toca Instalar.",
@@ -429,7 +500,7 @@ const Calc = {
       Later, swap localStorage for an account backend here.
    ========================================================= */
 const Store = (() => {
-  const PREFS = "fdh.prefs", REAL = "fdh.real", DEMO = "fdh.demo", OLD = "flexDriverHub.v1";
+  const PREFS = "fdh.prefs", REAL = "fdh.real", DEMO = "fdh.demo3", OLD = "flexDriverHub.v1";
   const mem = {};
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
   const read = k => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : null; } catch(e) { return null; } };
@@ -443,21 +514,26 @@ const Store = (() => {
     const mk = (offset, start, end, base, tips, miles, gas, notes) => {
       const baseCents = Calc.cents(base), tipsCents = Calc.cents(tips);
       return { id: uid(), date: Calc.addDays(today, -offset), start, end, baseCents, tipsCents,
-        miles, gasCents: Calc.cents(gas), notes, reservePct: 25,
+        miles, gasCents: 0, notes, reservePct: 25,
         reserveCents: Calc.reserve(baseCents+tipsCents, 25), edited:false, editedAt:null,
         createdAt: Date.now() - offset*86400000 };
     };
     return {
       settings: { reservePct: 25, reserveSet: true, targetHours: 40, weekStart: 1 },
       routes: [
-        mk(0, "08:00","12:30", 72, 8, 41.2, 9.5, "Whole Foods block, 2 stops cancelled"),
-        mk(1, "13:00","17:15", 68, 0, 38.6, 8.75, ""),
-        mk(2, "21:00","01:30", 81, 14.5, 52.0, 11.2, "Night logistics, ran past midnight"),
-        mk(5, "10:00","13:30", 57, 6, 33.4, 7.4, ""),
-        mk(9, "07:30","11:00", 54, 0, 29.9, 6.8, "Short block, light traffic"),
-        mk(12, "15:00","19:00", 76, 11, 44.7, 10.1, ""),
-        mk(16, "09:00","12:00", 52, 4, 27.3, 6.2, "")
-      ]
+        [0,"08:00","12:30",72,8,41.2,9.5,"Whole Foods block, 2 stops cancelled"],[1,"13:00","17:15",68,0,38.6,8.75,""],
+        [2,"21:00","01:30",81,14.5,52,11.2,"Night logistics, ran past midnight"],[3,"04:30","07:30",79.5,0,36.1,8.1,""],
+        [5,"10:00","13:30",57,6,33.4,7.4,""],[6,"16:45","19:00",60,0,24.8,5.6,""],[8,"02:15","05:45",91,0,47.5,10.4,""],
+        [9,"07:30","11:00",54,0,29.9,6.8,"Short block, light traffic"],[10,"21:00","23:00",49,0,21.2,4.9,""],
+        [12,"15:00","19:00",76,11,44.7,10.1,""],[13,"02:30","06:00",91,0,48.3,10.6,""],[15,"09:00","12:00",52,4,27.3,6.2,""],
+        [16,"04:30","08:30",88,0,46.9,10.3,""],[17,"13:00","16:30",66,9.25,35.2,7.9,""],[19,"21:00","01:00",84,12,50.4,11,""],
+        [20,"08:00","11:00",54,0,28.1,6.3,""],[22,"02:15","05:45",91,0,47.1,10.4,""],[23,"16:00","19:30",63,7.5,33.8,7.6,""],
+        [24,"10:00","13:00",56,0,30.2,6.8,""],[26,"04:30","07:30",79.5,0,36.4,8.2,""],[27,"18:00","21:00",58,10,31.6,7.1,""],
+        [29,"08:30","12:30",74,5,40.9,9.2,""],[30,"02:30","06:00",91,0,48,10.6,""],[31,"13:30","16:30",57,0,29.7,6.7,""],
+        [33,"21:00","23:00",49,6,22.4,5.1,""],[34,"09:00","13:00",72,0,39.5,8.9,""]
+      ].map(a => mk(...a)),
+      fillups: [0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34].map((o, i) => ({ id: uid(), date: Calc.addDays(today, -o),
+        amountCents: [2650,2200,2975,2400,3000,2150,2800,2525,2300,2900,2075,2700,2450,3000,2250,2600,2875,2350][i], gallons: null, odometer: null, createdAt: Date.now() }))
     };
   }
   function prefs(){
@@ -512,6 +588,15 @@ const Store = (() => {
       save(); return d.routes.length;
     },
     resetDemo(){ write(DEMO, demoSeed()); },
+    fillups(){ const d = ds(); if (!Array.isArray(d.fillups)) d.fillups = []; return d.fillups.slice(); },
+    addFillup(f){ const d = ds(); if (!Array.isArray(d.fillups)) d.fillups = []; d.fillups.push({ ...f, id: uid(), createdAt: Date.now() }); save(); },
+    removeFillup(id){ const d = ds(); d.fillups = (d.fillups || []).filter(f => f.id !== id); save(); },
+    importFillups(list, replace){
+      const d = ds(REAL); const sig = f => f.date + "|" + f.amountCents;
+      const kept = replace ? [] : (d.fillups || []).slice(); const seen = new Set(kept.map(sig));
+      list.forEach(f => { if (!seen.has(sig(f))){ seen.add(sig(f)); kept.push({ ...f, id: uid(), createdAt: Date.now() }); } });
+      d.fillups = kept; write(REAL, d);
+    },
     importRoutes(list, replace){
       const d = ds(REAL);
       const sig = r => [r.date, r.start, r.end, r.baseCents, r.tipsCents].join("|");
@@ -519,7 +604,7 @@ const Store = (() => {
       const seen = new Set(kept.map(sig));
       let added = 0, dup = 0;
       list.forEach(r => { const s = sig(r); if (seen.has(s)){ dup++; return; } seen.add(s); kept.push({ ...r, id: uid(), createdAt: Date.now() }); added++; });
-      write(REAL, { settings: d.settings, routes: kept });
+      write(REAL, { ...d, settings: d.settings, routes: kept });
       this.setPrefs({ mode: "real" });
       return { added, dup };
     }
@@ -550,14 +635,18 @@ const fmtTime = hhmm => { const [h,m] = hhmm.split(":").map(Number); return new 
 const countLabel = n => n === 0 ? t("routesZero") : n === 1 ? t("routesOne") : t("routesMany", {n});
 const todayIso = () => Calc.iso(new Date());
 
+const fuelSum = list => list.reduce((a, f) => a + f.amountCents, 0);
 function periods(){
-  const s = Store.settings, today = todayIso(), all = Store.routes();
+  const s = Store.settings, today = todayIso(), all = Store.routes(), fu = Store.fillups();
   const wk = Calc.addDays(Calc.weekStart(today, s.weekStart), -7 * ui.weekOffset);
   return {
     weekStartIso: wk,
     today: all.filter(r => r.date === today),
     week: all.filter(r => Calc.weekStart(r.date, s.weekStart) === wk),
-    month: all.filter(r => r.date.slice(0,7) === today.slice(0,7))
+    month: all.filter(r => r.date.slice(0,7) === today.slice(0,7)),
+    fToday: fu.filter(f => f.date === today),
+    fWeek: fu.filter(f => Calc.weekStart(f.date, s.weekStart) === wk),
+    fMonth: fu.filter(f => f.date.slice(0,7) === today.slice(0,7))
   };
 }
 
@@ -580,16 +669,18 @@ function header(title, sub){
   return stripe + `<header class="top"><div class="top-row"><h1>${esc(title)}</h1><span class="tag">${esc(t("conceptTag"))}</span></div>${sub ? `<div class="sub">${esc(sub)}</div>` : ""}</header>`;
 }
 
-function totalsCard(title, list){
-  const x = Calc.totals(list);
-  return `<section class="card tot" aria-label="${esc(title)}">
+function totalsCard(title, list, fuel, kind){
+  const x = Calc.totals(list); x.gas += fuelSum(fuel || []);
+  const tap = kind ? ` tap" data-act="open-period" data-kind="${kind}" role="button" tabindex="0` : "";
+  return `<section class="card tot${tap}" aria-label="${esc(title)}">
     <div class="tot-head"><h2>${esc(title)}</h2><span class="count num">${esc(countLabel(x.count))}</span></div>
     <div class="tot-grid num">
       <div><div class="k">${esc(t("gross"))}</div><div class="v">${money(x.gross)}</div></div>
       <div><div class="k">${esc(t("reserve"))}</div><div class="v">${money(x.reserve)}</div></div>
       <div><div class="k">${esc(t("spendable"))}</div><div class="v spend">${money(x.spendable)}</div></div>
     </div>
-    <div class="tot-foot num"><span>${esc(t("miles"))} <b>${one(x.miles)}</b></span><span>${esc(t("gas"))} <b>${money(x.gas)}</b></span></div>
+    <div class="tot-foot num"><span>${esc(t("miles"))} <b>${one(x.miles)}</b></span><span>${esc(t("gas"))} <b>${money(x.gas)}</b></span><span>${esc(t("afterGas"))} <b>${money(x.spendable - x.gas)}</b></span></div>
+    ${kind && x.count ? `<div class="see"><span>${esc(t("seeRoutes", { routes: countLabel(x.count).toLowerCase() }))}</span><span aria-hidden="true">›</span></div>` : ""}
   </section>`;
 }
 
@@ -614,9 +705,10 @@ function viewHome(){
       ${ui.weekOffset > 0 ? `<button type="button" class="btn" data-act="week" data-step="-1">${esc(t("nextWeek"))}</button>` : ""}
     </div>
     ${ui.weekOffset > 0 ? `<button type="button" class="btn primary block" data-act="week" data-step="0">${esc(t("thisWeekBtn"))}</button>` : ""}
-    ${ui.weekOffset === 0 ? totalsCard(t("today"), p.today) : ""}
-    ${totalsCard(t(ui.weekOffset === 0 ? "week" : "pastWeek"), p.week)}
-    ${ui.weekOffset === 0 ? totalsCard(t("month"), p.month) : ""}
+    <button type="button" class="btn block" data-act="go" data-view="fuel">${esc(t("fuelBtn"))}</button>
+    ${ui.weekOffset === 0 ? totalsCard(t("today"), p.today, p.fToday, "today") : ""}
+    ${totalsCard(t(ui.weekOffset === 0 ? "week" : "pastWeek"), p.week, p.fWeek, "week")}
+    ${ui.weekOffset === 0 ? totalsCard(t("month"), p.month, p.fMonth, "month") : ""}
     <p class="foot-note">${esc(t("footer"))}</p>
   </main>`;
 }
@@ -667,9 +759,10 @@ function formDraft(){
   if (ui.editId){
     const r = Store.get(ui.editId);
     if (r) return { date:r.date, start:r.start, end:r.end, base:(r.baseCents/100).toFixed(2), tips:(r.tipsCents/100).toFixed(2),
-      miles:String(r.miles), gas:(r.gasCents/100).toFixed(2), notes:r.notes, reservePct:String(r.reservePct) };
+      miles:String(r.miles), gas:(r.gasCents/100).toFixed(2), notes:r.notes, reservePct:String(r.reservePct),
+      odoStart: r.odoStart != null ? String(r.odoStart) : "", odoEnd: r.odoEnd != null ? String(r.odoEnd) : "" };
   }
-  return { date: todayIso(), start:"", end:"", base:"", tips:"0", miles:"", gas:"0", notes:"", reservePct:String(Store.settings.reservePct) };
+  return { date: todayIso(), start:"", end:"", base:"", tips:"0", miles:"", gas:"0", notes:"", reservePct:String(Store.settings.reservePct), odoStart:"", odoEnd:"" };
 }
 
 function previewHtml(d){
@@ -709,8 +802,13 @@ function viewForm(){
         ${field("tips","fTips", `<div class="prefix"><input id="tips" name="tips" inputmode="decimal" value="${esc(d.tips)}" placeholder="0.00"${inv("tips")}></div>`)}
       </div>
       <div class="pair">
+        ${field("odoStart","fOdoStart", `<input id="odoStart" name="odoStart" inputmode="decimal" value="${esc(d.odoStart || "")}" placeholder="48210"${inv("odoStart")}>`)}
+        ${field("odoEnd","fOdoEnd", `<input id="odoEnd" name="odoEnd" inputmode="decimal" value="${esc(d.odoEnd || "")}" placeholder="48252"${inv("odoEnd")}>`)}
+      </div>
+      <p class="mutedp" style="margin-top:-6px">${esc(t("fOdoHint"))}</p>
+      <div class="pair">
         ${field("miles","fMiles", `<input id="miles" name="miles" inputmode="decimal" value="${esc(d.miles)}" placeholder="0.0"${inv("miles")}>`)}
-        ${field("gas","fGas", `<div class="prefix"><input id="gas" name="gas" inputmode="decimal" value="${esc(d.gas)}" placeholder="0.00"${inv("gas")}></div>`)}
+        ${field("gas","fGasRoute", `<div class="prefix"><input id="gas" name="gas" inputmode="decimal" value="${esc(d.gas)}" placeholder="0.00"${inv("gas")}></div>`, t("fGasRouteHint"))}
       </div>
       ${field("reservePct","fReserve", `<input id="reservePct" name="reservePct" inputmode="decimal" value="${esc(d.reservePct)}"${inv("reservePct")}>`, t(editing ? "fReserveHintEdit" : "fReserveHintNew"))}
       ${field("notes","fNotes", `<textarea id="notes" name="notes">${esc(d.notes)}</textarea>`, t("fNotesHint"))}
@@ -880,8 +978,177 @@ function viewReview(){
   </main>`;
 }
 
+function viewPeriod(){
+  const p = periods(), kind = ui.period || "today";
+  const list = kind === "today" ? p.today : kind === "week" ? p.week : p.month;
+  const fuel = kind === "today" ? p.fToday : kind === "week" ? p.fWeek : p.fMonth;
+  const title = kind === "today" ? t("today") : kind === "week" ? t(ui.weekOffset === 0 ? "week" : "pastWeek") : t("month");
+  const sub = kind === "today" ? fmtDate(todayIso(), { weekday:"long", month:"long", day:"numeric" })
+    : kind === "week" ? fmtDate(p.weekStartIso, { month:"short", day:"numeric" }) + " – " + fmtDate(Calc.addDays(p.weekStartIso, 6), { month:"short", day:"numeric" })
+    : new Intl.DateTimeFormat(loc(), { month:"long", year:"numeric" }).format(Calc.parseDate(todayIso()));
+  const byDay = {}; list.forEach(r => { (byDay[r.date] = byDay[r.date] || []).push(r); });
+  const days = Object.keys(byDay).sort().reverse();
+  const groups = days.map(d => {
+    const rs = byDay[d].sort((a, b) => a.start.localeCompare(b.start)), x = Calc.totals(rs);
+    const f = fuel.filter(z => z.date === d);
+    return `<div class="dayhead"><h3>${esc(fmtDate(d, { weekday:"short", month:"short", day:"numeric" }))}</h3>
+        <span class="mutedp num" style="font-weight:700">${esc(t("dayHead", { routes: countLabel(rs.length), amt: money(x.gross) }))}</span></div>
+      ${rs.map(routeRow).join("")}
+      ${f.map(z => `<p class="mutedp num">${esc(t("fuelTitle"))}: <b>${money(z.amountCents)}</b></p>`).join("")}`;
+  }).join("");
+  return header(title, sub) + `<main>
+    <button type="button" class="btn" style="justify-self:start" data-act="go" data-view="home">${esc(t("back"))}</button>
+    ${totalsCard(title, list, fuel)}
+    ${groups || `<div class="empty card">${esc(t("noRoutes"))}</div>`}
+  </main>`;
+}
+
+function viewFuel(){
+  const list = Store.fillups().sort((a, b) => (b.date + b.createdAt).localeCompare(a.date + a.createdAt)).slice(0, 15);
+  const fd = ui.fuelDraft || { date: todayIso(), amount:"", gallons:"", odo:"" };
+  return header(t("fuelTitle")) + `<main>
+    <form id="fuelForm" class="card" novalidate>
+      ${field("fDate","fDate", `<input id="fDate" type="date" value="${esc(fd.date)}"${inv("fDate")}>`)}
+      ${field("fAmount","fuelAmount", `<div class="prefix"><input id="fAmount" inputmode="decimal" value="${esc(fd.amount)}" placeholder="25.00"${inv("fAmount")}></div>`)}
+      <div class="pair">
+        ${field("fGallons","fuelGallons", `<input id="fGallons" inputmode="decimal" value="${esc(fd.gallons)}" placeholder="${esc(t("fuelOptional"))}"${inv("fGallons")}>`)}
+        ${field("fOdo","fuelOdo", `<input id="fOdo" inputmode="decimal" value="${esc(fd.odo)}" placeholder="${esc(t("fuelOptional"))}"${inv("fOdo")}>`)}
+      </div>
+      <div class="row-actions"><button type="button" class="btn" data-act="go" data-view="home">${esc(t("cancel"))}</button>
+        <button type="submit" class="btn primary" style="flex:1">${esc(t("fuelSave"))}</button></div>
+    </form>
+    <h2 style="font-size:22px">${esc(t("fuelRecent"))}</h2>
+    ${list.length ? list.map(f => `<article class="route" style="border-left-color:var(--road)">
+      <div class="route-top"><span class="route-date">${esc(fmtDate(f.date))}</span><b class="num">${money(f.amountCents)}</b></div>
+      ${f.gallons || f.odometer ? `<div class="route-money num">${f.gallons ? `<span>${esc(t("fuelGallons"))} <b>${esc(f.gallons)}</b></span>` : ""}${f.odometer ? `<span>${esc(t("fuelOdo"))} <b>${esc(f.odometer)}</b></span>` : ""}</div>` : ""}
+      <div class="row-actions"><button type="button" class="btn ghost-danger" data-act="ask-del-fuel" data-id="${f.id}">${esc(t("del"))}</button></div>
+    </article>`).join("") : `<div class="empty card">${esc(t("fuelNone"))}</div>`}
+  </main>`;
+}
+
+function insightsCard(){
+  const all = Store.routes().sort((a, b) => (b.date + b.start).localeCompare(a.date + a.start));
+  const s = Store.settings, out = [];
+  if (all.length < 5) return `<section class="card" style="display:grid;gap:8px"><h2 style="font-size:22px">${esc(t("insTitle"))}</h2><p class="mutedp">${esc(t("insNeedMore"))}</p></section>`;
+  const rate = (g, m) => money(Math.round(g / (m / 60)));
+  // best and worst time of day by pay per hour
+  const bucket = r => { const h = Number(r.start.slice(0,2)); return h < 5 ? "bOvernight" : h < 11 ? "bMorning" : h < 17 ? "bAfternoon" : "bEvening"; };
+  const b = {}; all.forEach(r => { const k = bucket(r); b[k] = b[k] || { g:0, m:0, n:0 }; b[k].g += r.gross; b[k].m += r.minutes; b[k].n++; });
+  const ranked = Object.entries(b).filter(([, v]) => v.n >= 2 && v.m > 0).sort((x, y) => y[1].g / y[1].m - x[1].g / x[1].m);
+  if (ranked.length >= 2){
+    const [bk, bv] = ranked[0], [wk, wv] = ranked[ranked.length - 1];
+    out.push(t("insBestTime", { best: t(bk), bestRate: rate(bv.g, bv.m), worst: t(wk), worstRate: rate(wv.g, wv.m) }));
+  }
+  // gas share in the last full week that has routes
+  const curWk = Calc.weekStart(todayIso(), s.weekStart);
+  const wkGross = {}; all.forEach(r => { const k = Calc.weekStart(r.date, s.weekStart); wkGross[k] = (wkGross[k] || 0) + r.gross; });
+  const lastFull = Object.keys(wkGross).filter(k => k < curWk).sort().pop();
+  if (lastFull){
+    const gas = fuelSum(Store.fillups().filter(f => Calc.weekStart(f.date, s.weekStart) === lastFull)) +
+                all.filter(r => Calc.weekStart(r.date, s.weekStart) === lastFull).reduce((a, r) => a + r.gasCents, 0);
+    if (gas > 0){
+      const pct = Math.round(gas / wkGross[lastFull] * 100);
+      out.push(t(pct >= 20 ? "insGas" : "insGasOk", { pct, week: fmtDate(lastFull, { month:"short", day:"numeric" }) }));
+    }
+  }
+  // miles coverage and pay per mile
+  const recent = all.slice(0, 10), noMiles = recent.filter(r => !r.miles).length;
+  out.push(noMiles ? t("insMiles", { n: noMiles, m: recent.length }) : t("insMilesOk", { m: recent.length }));
+  const withMiles = recent.filter(r => r.miles > 0);
+  if (withMiles.length >= 3){
+    const g = withMiles.reduce((a, r) => a + r.gross, 0), mi = withMiles.reduce((a, r) => a + r.miles, 0);
+    out.push(t("insPerMile", { rate: money(Math.round(g / mi)), m: withMiles.length }));
+  }
+  return `<section class="card" style="display:grid;gap:10px;border-left:6px solid var(--good)">
+    <h2 style="font-size:22px">${esc(t("insTitle"))}</h2>
+    <ul style="margin:0;padding-left:20px;display:grid;gap:8px">${out.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+    <p class="mutedp" style="font-size:13px">${esc(t("insHint"))}</p>
+  </section>`;
+}
+
+function viewHistory(){
+  const s = Store.settings, ws = s.weekStart, all = Store.routes(), today = todayIso(), fu = Store.fillups();
+  const ym = ui.histMonth || today.slice(0,7);
+  const [y, m] = ym.split("-").map(Number);
+  const daysIn = new Date(y, m, 0).getDate();
+  const first = ym + "-01", last = ym + "-" + String(daysIn).padStart(2,"0");
+  const byDay = {}; all.forEach(r => { (byDay[r.date] = byDay[r.date] || []).push(r); });
+  const gridStart = Calc.weekStart(first, ws), gridEnd = Calc.addDays(Calc.weekStart(last, ws), 6);
+  const curWk = Calc.weekStart(today, ws);
+  const fmtMonth = new Intl.DateTimeFormat(loc(), { month:"long", year:"numeric" }).format(new Date(y, m-1, 1));
+  const shortAmt = c => "$" + new Intl.NumberFormat(loc(), { maximumFractionDigits:0 }).format(Math.round(c/100));
+
+  let cal = "";
+  for (let i = 0; i < 7; i++) cal += `<div class="dow">${esc(new Intl.DateTimeFormat(loc(), { weekday:"narrow" }).format(Calc.parseDate(Calc.addDays(gridStart, i))))}</div>`;
+  for (let d = gridStart; d <= gridEnd; d = Calc.addDays(d, 1)){
+    const list = byDay[d] || [], gross = list.reduce((a, r) => a + r.gross, 0);
+    const cls = [list.length ? "has" : "", d.slice(0,7) !== ym ? "out" : "", d === today ? "today" : ""].join(" ");
+    const label = fmtDate(d, { weekday:"long", month:"long", day:"numeric" }) + (list.length ? ", " + money(gross) : "");
+    cal += `<button type="button" class="${cls}" data-act="hist-day" data-day="${d}" aria-pressed="${ui.histDay === d}" aria-label="${esc(label)}">
+      <span class="dn">${+d.slice(8)}</span>${list.length ? `<span class="amt">${shortAmt(gross)}</span>` : ""}</button>`;
+  }
+
+  let dayPanel = "";
+  if (ui.histDay){
+    const list = (byDay[ui.histDay] || []).slice().sort((a, b) => a.start.localeCompare(b.start));
+    const x = Calc.totals(list), dayFuel = fu.filter(f => f.date === ui.histDay);
+    dayPanel = `<section class="card" style="display:grid;gap:10px">
+      <div class="wk-head"><h3>${esc(fmtDate(ui.histDay, { weekday:"long", month:"short", day:"numeric" }))}</h3>
+      ${list.length ? `<span class="num" style="font-weight:700">${esc(t("dayTotal"))} ${money(x.gross)}</span>` : ""}</div>
+      ${list.length ? list.map(routeRow).join("") : `<p class="mutedp">${esc(t("dayNone"))}</p>`}
+      ${dayFuel.map(f => `<p class="mutedp num">${esc(t("fuelTitle"))}: <b>${money(f.amountCents)}</b></p>`).join("")}
+    </section>`;
+  }
+
+  // every week with routes, for "best week"
+  const weekTotals = {};
+  all.forEach(r => { const k = Calc.weekStart(r.date, ws); weekTotals[k] = (weekTotals[k] || 0) + r.gross; });
+  let bestWk = null; Object.keys(weekTotals).forEach(k => { if (!bestWk || weekTotals[k] > weekTotals[bestWk]) bestWk = k; });
+
+  const weeks = [];
+  for (let wk = gridStart; wk <= gridEnd; wk = Calc.addDays(wk, 7)) if (wk <= curWk) weeks.push(wk);
+  const cards = weeks.reverse().map(wk => {
+    const list = all.filter(r => Calc.weekStart(r.date, ws) === wk), x = Calc.totals(list);
+    x.gas += fuelSum(fu.filter(f => Calc.weekStart(f.date, ws) === wk));
+    const prev = weekTotals[Calc.addDays(wk, -7)] || 0, diff = x.gross - prev;
+    const target = s.targetHours * 60, pct = target ? Math.min(100, x.minutes / target * 100) : 0;
+    const chips = (wk === curWk ? `<span class="chip cur">${esc(t("chipThisWeek"))}</span>` : "") +
+                  (wk === bestWk && x.gross > 0 ? `<span class="chip best">${esc(t("chipBest"))}</span>` : "");
+    const vs = (!x.count && !prev) ? "" : diff > 0 ? `<span class="vs up num">${esc(t("vsUp", { amt: money(diff) }))}</span>`
+      : diff < 0 ? `<span class="vs down num">${esc(t("vsDown", { amt: money(-diff) }))}</span>` : `<span class="vs same">${esc(t("vsSame"))}</span>`;
+    return `<section class="card wk ${wk === curWk ? "current" : ""}">
+      <div class="wk-head"><h3>${esc(fmtDate(wk, { month:"short", day:"numeric" }))} – ${esc(fmtDate(Calc.addDays(wk, 6), { month:"short", day:"numeric" }))}</h3>
+        <span class="chips">${chips}</span></div>
+      <div class="minibar ${x.minutes > target ? "over" : ""}"><span style="width:${pct}%"></span></div>
+      <div class="wk-head"><span class="mutedp num">${esc(t("weekHours", { h: one(x.minutes/60), target: s.targetHours }))} · ${esc(countLabel(x.count))}</span>${vs}</div>
+      <div class="tot-grid num">
+        <div><div class="k">${esc(t("gross"))}</div><div class="v">${money(x.gross)}</div></div>
+        <div><div class="k">${esc(t("reserve"))}</div><div class="v">${money(x.reserve)}</div></div>
+        <div><div class="k">${esc(t("spendable"))}</div><div class="v spend">${money(x.spendable)}</div></div>
+      </div>
+      <div class="tot-foot num" style="margin-top:0"><span>${esc(t("miles"))} <b>${one(x.miles)}</b></span><span>${esc(t("gas"))} <b>${money(x.gas)}</b></span><span>${esc(t("afterGas"))} <b>${money(x.spendable - x.gas)}</b></span>${x.gross ? `<span>${esc(t("gasShare", { pct: Math.round(x.gas / x.gross * 100) }))}</span>` : ""}</div>
+    </section>`;
+  }).join("");
+
+  return header(t("histTitle"), t("histSub")) + `<main>
+    <section class="card" style="display:grid;gap:12px">
+      <div class="month-nav">
+        <button type="button" class="btn" data-act="hist-month" data-step="-1" aria-label="${esc(t("prevMonth"))}">‹</button>
+        <h2>${esc(fmtMonth)}</h2>
+        <button type="button" class="btn" data-act="hist-month" data-step="1" aria-label="${esc(t("nextMonth"))}">›</button>
+      </div>
+      <div class="cal">${cal}</div>
+    </section>
+    ${dayPanel}
+    ${insightsCard()}
+    <h2 style="font-size:24px">${esc(t("weeksHeading"))}</h2>
+    ${cards || `<div class="empty card">${esc(t("noRoutes"))}</div>`}
+  </main>`;
+}
+
 function renderTabs(){
   const icon = {
+    history:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h2M14 14h2M8 17h2"/></svg>',
     home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
     routes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
     add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
@@ -889,7 +1156,7 @@ function renderTabs(){
   };
   const b = (view, key, extra="") => `<button type="button" data-act="go" data-view="${view}" class="${extra}" ${ui.view===view || (view==="add" && ui.view==="form") ? 'aria-current="page"' : ""}>${icon[view]}<span>${esc(t(key))}</span></button>`;
   $tabs.setAttribute("aria-label", t("navHome"));
-  $tabs.innerHTML = `<div class="in">${b("home","navHome")}${b("routes","navRoutes")}${b("add","navAdd","add")}${b("settings","navSettings")}</div>`;
+  $tabs.innerHTML = `<div class="in">${b("home","navHome")}${b("history","navHistory")}${b("add","navAdd","add")}${b("routes","navRoutes")}${b("settings","navSettings")}</div>`;
 }
 
 function renderModal(){
@@ -909,7 +1176,7 @@ function render(){
   if (!Store.mode){ $app.innerHTML = viewWelcome(); $tabs.hidden = true; renderModal(); fillQr(); return; }
   $tabs.hidden = false;
   const v = ui.view;
-  $app.innerHTML = v==="home" ? viewHome() : v==="routes" ? viewRoutes() : v==="form" ? viewForm() : v==="review" ? viewReview() : viewSettings();
+  $app.innerHTML = v==="home" ? viewHome() : v==="routes" ? viewRoutes() : v==="form" ? viewForm() : v==="review" ? viewReview() : v==="history" ? viewHistory() : v==="fuel" ? viewFuel() : v==="period" ? viewPeriod() : viewSettings();
   renderTabs(); renderModal(); fillQr();
 }
 
@@ -922,7 +1189,7 @@ function toast(msg){
   toastTimer = setTimeout(()=>{ el.hidden = true; }, 2200);
 }
 
-function go(view){ ui.view = view; ui.errors = {}; ui.draft = null; if (view !== "routes") ui.csvOpen = false; render(); window.scrollTo(0,0); }
+function go(view){ ui.view = view; ui.errors = {}; ui.draft = null; ui.fuelDraft = null; if (view !== "routes") ui.csvOpen = false; render(); window.scrollTo(0,0); }
 
 /* =========================================================
    5. CSV
@@ -937,6 +1204,11 @@ function buildCsv(){
   const x = Calc.totals(list);
   const base = list.reduce((s,r)=>s+r.baseCents,0), tips = list.reduce((s,r)=>s+r.tipsCents,0);
   rows.push([t("csvTotal"), "", "", (x.minutes/60).toFixed(2), d2(base), d2(tips), d2(x.gross), "", d2(x.reserve), d2(x.spendable), x.miles.toFixed(1), d2(x.gas), "", ""]);
+  const fu = Store.fillups().sort((a, b) => a.date.localeCompare(b.date));
+  if (fu.length){
+    rows.push([]); rows.push(t("csvFuelHeaders"));
+    fu.forEach(f => rows.push([f.date, (f.amountCents/100).toFixed(2), f.gallons ?? "", f.odometer ?? ""]));
+  }
   return rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
 }
 let downloadsApi = null;
@@ -985,7 +1257,7 @@ const isNonNeg = v => v.trim() !== "" && Number.isFinite(Number(v)) && Number(v)
 function readForm(){
   const f = document.getElementById("routeForm"); if (!f) return null;
   const g = id => f.querySelector("#"+id).value;
-  return { date:g("date"), start:g("start"), end:g("end"), base:g("base"), tips:g("tips"), miles:g("miles"), gas:g("gas"), notes:g("notes"), reservePct:g("reservePct") };
+  return { date:g("date"), start:g("start"), end:g("end"), base:g("base"), tips:g("tips"), miles:g("miles"), gas:g("gas"), notes:g("notes"), reservePct:g("reservePct"), odoStart:g("odoStart"), odoEnd:g("odoEnd") };
 }
 
 document.addEventListener("click", e => {
@@ -994,7 +1266,7 @@ document.addEventListener("click", e => {
   if (el.dataset.act === "modal-cancel" && e.target.closest("[data-stop]") && !e.target.closest('button[data-act="modal-cancel"]')) return;
   const act = el.dataset.act;
   if (act === "go"){ const v = el.dataset.view; if (v === "add"){ ui.editId = null; go("form"); } else go(v); }
-  else if (act === "edit"){ ui.editId = el.dataset.id; go("form"); }
+  else if (act === "edit"){ ui.returnTo = (ui.view === "period" || ui.view === "history") ? ui.view : null; ui.editId = el.dataset.id; go("form"); }
   else if (act === "cancel-form"){ go(ui.editId ? "routes" : "home"); ui.editId = null; }
   else if (act === "ask-delete"){
     const r = Store.get(el.dataset.id); if (!r) return;
@@ -1020,6 +1292,19 @@ document.addEventListener("click", e => {
   else if (act === "install-dismiss"){ Store.setPrefs({ installDismissed: true }); render(); }
   else if (act === "copy-link"){ copyText(APP_URL, t("linkCopied")); }
   else if (act === "copy-invite"){ copyText(t("inviteMsg", { url: APP_URL }), t("inviteCopied")); }
+  else if (act === "hist-month"){
+    const cur = ui.histMonth || todayIso().slice(0,7); const [yy, mm] = cur.split("-").map(Number);
+    const d = new Date(yy, mm - 1 + Number(el.dataset.step), 1);
+    ui.histMonth = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0"); ui.histDay = null; render();
+  }
+  else if (act === "hist-day"){ ui.histDay = ui.histDay === el.dataset.day ? null : el.dataset.day; render(); }
+  else if (act === "open-period"){ ui.period = el.dataset.kind; go("period"); }
+  else if (act === "ask-del-fuel"){
+    const f = Store.fillups().find(x => x.id === el.dataset.id); if (!f) return;
+    ui.modal = { title: t("fuelDelTitle"), body: t("fuelDelBody", { what: fmtDate(f.date) + ", " + money(f.amountCents) }), ok: t("fuelDelBtn"), danger: true,
+      run: () => { Store.removeFillup(f.id); toast(t("fuelDeleted")); } };
+    renderModal();
+  }
   else if (act === "reset-demo"){ Store.resetDemo(); toast(t("resetDemoDone")); render(); }
   else if (act === "modal-cancel"){ ui.modal = null; renderModal(); }
   else if (act === "export"){ ui.csvOpen = true; render(); downloadCsv(); }
@@ -1036,7 +1321,10 @@ document.addEventListener("click", e => {
   else if (act === "run-checks"){ ui.checks = runChecks(); render(); }
 });
 
-document.addEventListener("keydown", e => { if (e.key === "Escape" && ui.modal){ ui.modal = null; renderModal(); } });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && ui.modal){ ui.modal = null; renderModal(); }
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches('[data-act="open-period"]')){ e.preventDefault(); e.target.click(); }
+});
 
 document.addEventListener("input", e => {
   if (e.target.dataset && e.target.dataset.rv !== undefined && ui.review){
@@ -1045,6 +1333,11 @@ document.addEventListener("input", e => {
     return;
   }
   if (!e.target.closest("#routeForm")) return;
+  if (e.target.id === "odoStart" || e.target.id === "odoEnd"){
+    const a = Number(document.getElementById("odoStart").value), b = Number(document.getElementById("odoEnd").value);
+    if (document.getElementById("odoStart").value.trim() && document.getElementById("odoEnd").value.trim() && Number.isFinite(a) && Number.isFinite(b) && b >= a)
+      document.getElementById("miles").value = (Math.round((b - a) * 10) / 10).toFixed(1);
+  }
   const d = readForm(); ui.draft = d;
   document.getElementById("preview").innerHTML = previewHtml(d);
 });
@@ -1060,11 +1353,25 @@ document.addEventListener("submit", e => {
     ["tips","gas"].forEach(k=>{ if (d[k].trim() !== "" && !isNonNeg(d[k])) err[k] = "errNum"; });
     if (d.miles.trim() !== "" && !isNonNeg(d.miles)) err.miles = "errNum";
     if (!isNonNeg(d.reservePct) || Number(d.reservePct) > 100) err.reservePct = "errNum";
+    ["odoStart","odoEnd"].forEach(k => { if (d[k].trim() !== "" && !isNonNeg(d[k])) err[k] = "errNum"; });
+    if (!err.odoStart && !err.odoEnd && d.odoStart.trim() && d.odoEnd.trim() && Number(d.odoEnd) < Number(d.odoStart)) err.odoEnd = "errOdo";
     if (Object.keys(err).length){ ui.errors = err; ui.draft = d; render(); const first = document.querySelector('[aria-invalid="true"]'); first && first.focus(); return; }
     const res = Store.upsert({ id: ui.editId || undefined, date:d.date, start:d.start, end:d.end,
       baseCents:Calc.cents(d.base), tipsCents:Calc.cents(d.tips||0), miles: Math.round(Number(d.miles||0)*10)/10,
-      gasCents:Calc.cents(d.gas||0), notes:d.notes.trim(), reservePct:Number(d.reservePct) });
-    toast(t(res)); const back = ui.editId ? "routes" : "home"; ui.editId = null; go(back);
+      gasCents:Calc.cents(d.gas||0), notes:d.notes.trim(), reservePct:Number(d.reservePct),
+      odoStart: d.odoStart.trim() ? Number(d.odoStart) : null, odoEnd: d.odoEnd.trim() ? Number(d.odoEnd) : null });
+    toast(t(res)); const back = ui.editId ? (ui.returnTo || "routes") : "home"; ui.editId = null; ui.returnTo = null; go(back);
+  }
+  if (e.target.id === "fuelForm"){
+    const g = id => document.getElementById(id).value;
+    const fd = { date: g("fDate"), amount: g("fAmount"), gallons: g("fGallons"), odo: g("fOdo") }, err = {};
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fd.date)) err.fDate = "errDate";
+    if (!isNonNeg(fd.amount) || Number(fd.amount) === 0) err.fAmount = "errNum";
+    if (fd.gallons.trim() && !isNonNeg(fd.gallons)) err.fGallons = "errNum";
+    if (fd.odo.trim() && !isNonNeg(fd.odo)) err.fOdo = "errNum";
+    if (Object.keys(err).length){ ui.errors = err; ui.fuelDraft = fd; render(); return; }
+    Store.addFillup({ date: fd.date, amountCents: Calc.cents(fd.amount), gallons: fd.gallons.trim() ? Number(fd.gallons) : null, odometer: fd.odo.trim() ? Number(fd.odo) : null });
+    ui.fuelDraft = null; ui.errors = {}; toast(t("fuelSaved")); render(); return;
   }
   if (e.target.id === "settingsForm"){
     const p = document.getElementById("sReservePct").value, h = document.getElementById("sTarget").value, err = {};
@@ -1269,9 +1576,17 @@ function routesFromCsv(text){
   if (!rows.length) return { error: "restoreEmpty" };
   const head = rows[0].map(h => h.trim().toLowerCase());
   if (![STRINGS.en.csvHeaders, STRINGS.es.csvHeaders].some(k => k.every((h,i) => head[i] === h))) return { error: "restoreBadFile" };
-  const out = []; let bad = 0;
+  const out = [], fuel = []; let bad = 0, inFuel = false;
+  const fuelHeads = [STRINGS.en.csvFuelHeaders[0], STRINGS.es.csvFuelHeaders[0]];
   rows.slice(1).forEach(r => {
     if (/^total$/i.test((r[0]||"").trim())) return;
+    if (fuelHeads.includes((r[0]||"").trim().toLowerCase())){ inFuel = true; return; }
+    if (inFuel){
+      const date = normDate(r[0]), amt = csvMoney(r[1]);
+      if (!date || amt === null){ bad++; return; }
+      fuel.push({ date, amountCents: amt, gallons: r[2] && Number.isFinite(Number(r[2])) ? Number(r[2]) : null, odometer: r[3] && Number.isFinite(Number(r[3])) ? Number(r[3]) : null });
+      return;
+    }
     const date = normDate(r[0]), start = normTime(r[1]), end = normTime(r[2]);
     const base = csvMoney(r[4]), tips = csvMoney(r[5] || "0"), pct = Number(r[7]), resv = csvMoney(r[8]);
     const miles = Number(r[10] || 0), gas = csvMoney(r[11] || "0");
@@ -1280,8 +1595,8 @@ function routesFromCsv(text){
       miles: Math.round(miles*10)/10, gasCents: gas, notes: (r[12]||"").trim(),
       edited: /^(yes|s[ií])$/i.test((r[13]||"").trim()), editedAt: null });
   });
-  if (!out.length) return { error: "restoreNone" };
-  return { routes: out, bad };
+  if (!out.length && !fuel.length) return { error: "restoreNone" };
+  return { routes: out, fuel, bad };
 }
 document.addEventListener("dragover", e => { if (e.target.closest && e.target.closest("#shotCard")) e.preventDefault(); });
 document.addEventListener("drop", e => {
@@ -1300,14 +1615,14 @@ document.addEventListener("change", e => {
     const res = routesFromCsv(String(reader.result || ""));
     e.target.value = "";
     if (res.error){ toast(t(res.error)); return; }
-    const dates = res.routes.map(r => r.date).sort();
+    const dates = (res.routes.length ? res.routes : res.fuel).map(r => r.date).sort();
     ui.modal = {
       title: t("restoreTitle"),
       body: t("restoreBody", { n: countLabel(res.routes.length), from: fmtDate(dates[0]), to: fmtDate(dates[dates.length-1]), m: Store.realCount() }),
       note: res.bad ? t("restoreBodyBad", { b: res.bad }) : "",
       ok: t("restoreAdd"), alt: t("restoreReplace"),
-      run: () => { const r = Store.importRoutes(res.routes, false); toast(t("restoreDone", { a: r.added, d: r.dup })); },
-      altRun: () => { const r = Store.importRoutes(res.routes, true); toast(t("restoreDone", { a: r.added, d: r.dup })); }
+      run: () => { const r = Store.importRoutes(res.routes, false); Store.importFillups(res.fuel || [], false); toast(t("restoreDone", { a: r.added, d: r.dup })); },
+      altRun: () => { const r = Store.importRoutes(res.routes, true); Store.importFillups(res.fuel || [], true); toast(t("restoreDone", { a: r.added, d: r.dup })); }
     };
     renderModal();
   };
