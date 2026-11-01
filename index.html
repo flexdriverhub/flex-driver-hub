@@ -265,7 +265,7 @@ const STRINGS = {
     shotLoading:"Getting the screenshot reader ready…", shotReading:"Reading screenshot {i} of {n}… {p}%",
     shotNone:"Couldn't find a route in that screenshot. Try a screenshot of one day's earnings, or type the route in.",
     shotFail:"Couldn't load the screenshot reader. Check your internet connection and try again.",
-    reviewTitle:"Check before saving", reviewHint:"These are the app's best guesses from your screenshot. Check every number against the Flex app. Miles and gas aren't on the screenshot, so add them here.",
+    reviewTitle:"Check before saving", reviewHint:"These are the app's best guesses from your screenshot. Check every number against the Flex app. The earnings list shows each block's total, so it goes in Base pay. To split out tips, tap the block in Flex. Miles and gas aren't on the screenshot, so add them here.",
     reviewInclude:"Save this route", reviewSave:"Save checked routes", reviewSaved:"Saved: {n}", reviewNoneChecked:"Check at least one route to save.",
     reviewRoute:"Route {n}", reviewText:"Show the text the app read", reviewFixErrors:"Fix the routes marked in red, or uncheck them.", prevWeek:"‹ Previous week", nextWeek:"Next week ›", thisWeekBtn:"Back to this week", pastWeek:"That week",
     wLede:"Log each Flex route. See your hours toward your weekly target, your day, week and month totals, and a tax reserve set aside from every route.",
@@ -367,7 +367,7 @@ const STRINGS = {
     shotLoading:"Preparando el lector de capturas…", shotReading:"Leyendo captura {i} de {n}… {p}%",
     shotNone:"No se encontró ninguna ruta en esa captura. Prueba con una captura de las ganancias de un día o escribe la ruta.",
     shotFail:"No se pudo cargar el lector de capturas. Revisa tu conexión a internet e inténtalo de nuevo.",
-    reviewTitle:"Revisa antes de guardar", reviewHint:"Estos son los cálculos de la app a partir de tu captura. Compara cada número con la app de Flex. Las millas y la gasolina no aparecen en la captura; agrégalas aquí.",
+    reviewTitle:"Revisa antes de guardar", reviewHint:"Estos son los cálculos de la app a partir de tu captura. Compara cada número con la app de Flex. La lista de ganancias muestra el total de cada bloque, así que va en Pago base. Para separar las propinas, toca el bloque en Flex. Las millas y la gasolina no aparecen en la captura; agrégalas aquí.",
     reviewInclude:"Guardar esta ruta", reviewSave:"Guardar rutas marcadas", reviewSaved:"Guardadas: {n}", reviewNoneChecked:"Marca al menos una ruta para guardar.",
     reviewRoute:"Ruta {n}", reviewText:"Ver el texto que leyó la app", reviewFixErrors:"Corrige las rutas marcadas en rojo o desmárcalas.", prevWeek:"‹ Semana anterior", nextWeek:"Semana siguiente ›", thisWeekBtn:"Volver a esta semana", pastWeek:"Esa semana",
     wLede:"Registra cada ruta de Flex. Ve tus horas hacia tu meta semanal, tus totales del día, la semana y el mes, y una reserva para impuestos apartada de cada ruta.",
@@ -1108,33 +1108,47 @@ function findDate(line){
 }
 const hm = (h, mi, ap) => { let H = (+h) % 12; if (/p/i.test(ap)) H += 12; return String(H).padStart(2,"0") + ":" + String(+(mi || 0)).padStart(2,"0"); };
 function parseShot(text){
+  /* Built from the real Flex Earnings list: each block is a card with
+     "date ... $amount" on one row, the time range under it, then "Paid".
+     Payout rows (Instant cash out, Payment sent) are not routes. */
   const lines = String(text).split(/\n/).map(l => l.replace(/[|]/g," ").trim()).filter(Boolean);
-  const timeRe = /(\d{1,2})(?::(\d{2}))?\s*([ap])\.?\s*m\.?\s*(?:-|–|—|to|a)\s*(\d{1,2})(?::(\d{2}))?\s*([ap])\.?\s*m\.?/i;
+  const timeRe = /(\d{1,2})(?::(\d{2}))?\s*([ap])\.?\s*m\.?\s*(?:-|–|—|~|to|a)\s*(\d{1,2})(?::(\d{2}))?\s*([ap])\.?\s*m\.?/i;
   const moneyRe = /\$\s?(\d{1,4}(?:,\d{3})*(?:\.\d{2})?)/g;
-  let cur = null; const items = []; let pending = [];
+  const payoutRe = /cash\s*out|payment\s*sent|pago\s*enviado|retiro|deposit|dep[oó]sito|transfer/i;
+  let cur = null, items = [], pending = [], open = null;   // open = route whose details may follow
   const take = (it, line, amt) => {
     const low = line.toLowerCase();
     if (/tip|propina/.test(low)) it.tips = +((it.tips || 0) + amt).toFixed(2);
     else if (/total/.test(low)) it.total = amt;
-    else if (/base|block|bloque|offer|oferta|pay|pago/.test(low) || it.base === null) { if (it.base === null) it.base = amt; else if (it.total === null) it.total = amt; }
+    else if (it.base === null) it.base = amt;
     else if (it.total === null) it.total = amt;
   };
+  let skipNextDate = false;
   for (const line of lines){
-    const d = findDate(line); if (d) cur = d;
+    if (payoutRe.test(line)){ pending = []; open = null; skipNextDate = !findDate(line); continue; }
+    const d = findDate(line);
+    if (d){
+      cur = d;
+      if (skipNextDate){ skipNextDate = false; continue; }   // date row of a payout, not a route
+      pending = []; open = null;                             // a new card starts
+    }
+    skipNextDate = false;
     const tm = line.match(timeRe);
+    const rest = tm ? line.replace(timeRe, "") : line;
+    const amts = [...rest.matchAll(moneyRe)].map(x => Number(x[1].replace(/,/g,"")));
     if (tm){
       const it = { date: cur || todayIso(), start: hm(tm[1],tm[2],tm[3]), end: hm(tm[4],tm[5],tm[6]), base:null, tips:null, total:null };
-      items.push(it);
       pending.forEach(([l,a]) => take(it, l, a)); pending = [];
+      items.push(it); open = it;
+      if (amts.length) take(it, rest, amts[amts.length-1]);
+      continue;
     }
-    const amts = [...line.matchAll(moneyRe)].map(x => Number(x[1].replace(/,/g,"")));
     if (!amts.length) continue;
-    const rest = tm ? line.replace(timeRe, "") : line;
     const amt = amts[amts.length-1];
-    if (items.length) take(items[items.length-1], rest, amt);
-    else pending.push([rest, amt]);
+    if (open) take(open, rest, amt);       // detail lines under a route (Base pay, Tips, Total)
+    else pending.push([rest, amt]);        // amount on the date row: belongs to the time range below
   }
-  if (!items.length && pending.length){   // amounts but no times: still offer one route to finish by hand
+  if (!items.length && pending.length){
     const it = { date: cur || todayIso(), start:"", end:"", base:null, tips:null, total:null };
     pending.forEach(([l,a]) => take(it, l, a)); items.push(it);
   }
@@ -1184,6 +1198,7 @@ async function readShots(files){
   let i = 0;
   try {
     worker = await T.createWorker("eng", 1, { logger: m => { if (m.status === "recognizing text") status(t("shotReading", {i, n: files.length, p: Math.round(m.progress*100)})); } });
+    try { await worker.setParameters({ tessedit_pageseg_mode: "6", preserve_interword_spaces: "1" }); } catch(_) {}
     let raw = "";
     for (const f of files){ i++; status(t("shotReading", {i, n: files.length, p: 0})); const { data } = await worker.recognize(await prepImage(f)); raw += data.text + "\n"; }
     await worker.terminate();
