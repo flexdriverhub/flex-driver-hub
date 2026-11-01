@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flex Driver Hub</title>
+<meta name="theme-color" content="#1e3846">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Flex Hub">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: one-column phone app, summary before detail, sticky bottom tab bar. Road-sign type, lane-paint accent. */
+  --ink:#15212b; --paper:#eef1f0; --card:#ffffff; --line:#d5dcd9; --muted:#58676d;
+  --accent:#f2b705; --accent-ink:#1d1600; --road:#1e3846; --road-ink:#f3f6f5;
+  --good:#1d7449; --warn:#8a5200; --warn-bg:#fff3d1; --bad:#b3261e; --bad-bg:#fde8e6;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#e6ecea; --paper:#0e161b; --card:#16222a; --line:#293943; --muted:#93a4aa;
+    --accent:#f5c22e; --accent-ink:#1d1600; --road:#0a1318; --road-ink:#eef3f1;
+    --good:#5cc48d; --warn:#f0b450; --warn-bg:#2a2210; --bad:#ff8a80; --bad-bg:#3a1714;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#e6ecea; --paper:#0e161b; --card:#16222a; --line:#293943; --muted:#93a4aa;
+  --accent:#f5c22e; --accent-ink:#1d1600; --road:#0a1318; --road-ink:#eef3f1;
+  --good:#5cc48d; --warn:#f0b450; --warn-bg:#2a2210; --bad:#ff8a80; --bad-bg:#3a1714;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:.01em;margin:0;text-wrap:balance;line-height:1.1}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.shell{max-width:560px;margin:0 auto;min-height:100%;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+.top{background:var(--road);color:var(--road-ink);padding:18px 16px 22px;position:relative}
+.top::after{content:"";position:absolute;left:16px;right:16px;bottom:8px;height:4px;
+  background:repeating-linear-gradient(90deg,var(--accent) 0 26px,transparent 26px 44px);opacity:.9}
+.top-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.top h1{font-size:28px;text-transform:uppercase}
+.tag{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+.top .sub{margin-top:4px;font-size:15px;opacity:.85}
+
+main{padding:16px;display:grid;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.banner{border-radius:12px;padding:12px 14px;display:grid;gap:8px;font-size:15px;border:1px solid}
+.banner.warn{background:var(--warn-bg);border-color:color-mix(in srgb,var(--warn) 45%,transparent);color:var(--ink)}
+.banner.warn strong{color:var(--warn)}
+.banner.info{background:var(--card);border-color:var(--line);color:var(--muted)}
+.banner .linkbtn{justify-self:start}
+
+.hours{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 16px;display:grid;gap:10px}
+.hours .eyebrow{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hours .big{font-family:var(--display);font-size:46px;font-weight:700;line-height:1}
+.hours .big.over{color:var(--bad)}
+.bar{height:14px;border-radius:7px;background:color-mix(in srgb,var(--muted) 18%,transparent);overflow:hidden;position:relative}
+.bar span{display:block;height:100%;background:var(--accent);border-radius:7px}
+.bar.over span{background:var(--bad)}
+.hours .meta{font-size:15px;color:var(--muted)}
+
+.tot h2{font-size:22px}
+.tot-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:10px}
+.tot-head .count{font-size:14px;color:var(--muted)}
+.tot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tot-grid .k{font-size:13px;color:var(--muted)}
+.tot-grid .v{font-size:19px;font-weight:600}
+.tot-grid .v.spend{color:var(--good)}
+.tot-foot{display:flex;gap:16px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:15px;color:var(--muted)}
+.tot-foot b{color:var(--ink);font-weight:600}
+
+.btn{min-height:48px;padding:10px 18px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.ghost-danger{color:var(--bad)}
+.btn.block{width:100%}
+.linkbtn{background:none;border:0;padding:6px 0;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer;min-height:40px}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.section-head h2{font-size:26px}
+.section-head .sub{font-size:14px;color:var(--muted)}
+
+.route{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;gap:8px;border-left:6px solid var(--accent)}
+.route.edited{border-left-color:var(--road)}
+.route-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.route-date{font-weight:700}
+.route-time{color:var(--muted);font-size:15px}
+.route-money{display:flex;gap:14px;flex-wrap:wrap;font-size:15px}
+.route-money span{color:var(--muted)}
+.route-money b{color:var(--ink);font-weight:600}
+.route-notes{font-size:15px;color:var(--muted);overflow-wrap:anywhere}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:12px;font-weight:600;letter-spacing:.03em;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.chip.ex{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+.chip.ed{background:color-mix(in srgb,var(--road) 14%,transparent);color:var(--ink);border-color:transparent}
+.chip.mid{color:var(--ink)}
+.empty{text-align:center;color:var(--muted);padding:28px 16px}
+
+form{display:grid;gap:14px}
+.field{display:grid;gap:6px}
+.field label{font-weight:600;font-size:15px}
+.field .hint{font-size:13px;color:var(--muted)}
+.field .err{font-size:14px;color:var(--bad);font-weight:600}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+input,select,textarea{width:100%;min-height:50px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--paper);font-size:17px}
+textarea{min-height:84px;resize:vertical}
+input[aria-invalid="true"]{border-color:var(--bad)}
+.prefix{position:relative}
+.prefix::before{content:"$";position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.prefix input{padding-left:26px}
+.preview{background:var(--paper);border:1px dashed var(--line);border-radius:12px;padding:12px 14px;display:grid;grid-template-columns:repeat(2,1fr);gap:6px 14px;font-size:15px}
+.preview .k{color:var(--muted)}
+.preview .v{text-align:right;font-weight:600}
+.preview h3{grid-column:1/-1;font-size:17px;margin-bottom:2px}
+
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{min-height:48px;border:0;background:var(--card);font-weight:600;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--road);color:var(--road-ink)}
+
+.csv{display:grid;gap:10px}
+.csv textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;min-height:160px;white-space:pre;overflow:auto}
+
+.checks{display:grid;gap:6px;font-size:15px}
+.check{display:flex;gap:10px;align-items:flex-start}
+.check .mark{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;color:#fff}
+.check.pass .mark{background:var(--good)}
+.check.fail .mark{background:var(--bad)}
+.check small{display:block;color:var(--muted)}
+.checks-sum{font-weight:700}
+
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom))}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1.2fr 1fr;gap:6px}
+nav.tabs button{min-height:56px;border:0;border-radius:12px;background:transparent;font-weight:600;font-size:14px;cursor:pointer;display:grid;place-items:center;gap:2px;color:var(--muted)}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button[aria-current="page"]{color:var(--ink);background:color-mix(in srgb,var(--muted) 12%,transparent)}
+nav.tabs button.add{background:var(--accent);color:var(--accent-ink)}
+
+.overlay{position:fixed;inset:0;background:rgba(5,10,14,.55);display:grid;place-items:end center;padding:16px;z-index:20}
+.dialog{background:var(--card);border-radius:16px;padding:20px;max-width:520px;width:100%;display:grid;gap:12px;margin-bottom:env(safe-area-inset-bottom)}
+.dialog h2{font-size:24px}
+.dialog p{margin:0;color:var(--muted)}
+.dialog .row-actions{justify-content:flex-end}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom));background:var(--road);color:var(--road-ink);padding:10px 16px;border-radius:999px;font-weight:600;font-size:15px;z-index:30;max-width:calc(100% - 32px);text-align:center}
+.demo-stripe{background:repeating-linear-gradient(135deg,var(--accent) 0 14px,#1d1600 14px 28px);padding:4px}
+.demo-stripe .in{background:var(--accent);color:var(--accent-ink);display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 12px;border-radius:6px;font-weight:700;font-size:14px;letter-spacing:.03em}
+.demo-stripe button{background:var(--accent-ink);color:var(--accent);border:0;border-radius:8px;min-height:36px;padding:4px 12px;font-weight:700;font-size:13px;cursor:pointer}
+.welcome{padding:16px;display:grid;gap:14px}
+.choice{display:grid;gap:4px;text-align:left;width:100%;padding:16px;border-radius:14px;border:2px solid var(--line);background:var(--card);cursor:pointer}
+.choice.primary{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--card))}
+.choice b{font-family:var(--display);font-size:24px;font-weight:700}
+.choice span{color:var(--muted);font-size:15px}
+.lede{font-size:18px;margin:0}
+.filebtn{position:relative;overflow:hidden}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer;min-height:0}
+.steps{margin:0;padding-left:20px;display:grid;gap:4px;font-size:15px}
+.steps-title{font-weight:700;margin-top:4px}
+.mutedp{margin:0;color:var(--muted);font-size:15px}
+.foot-note{font-size:13px;color:var(--muted);text-align:center;padding:0 8px}
+@media (prefers-reduced-motion: no-preference){
+  .bar span{transition:width .4s ease}
+}
+</style>
+</head>
+<body>
+<div class="shell" id="app"></div>
+<nav class="tabs" id="tabs" aria-label="Main"></nav>
+<div id="layer"></div>
+
+<script>
+/* =========================================================
+   1. STRINGS — every word the driver sees, English + Spanish
+   ========================================================= */
+const STRINGS = {
+  en: {
+    appName:"Flex Driver Hub", conceptTag:"Version 1",
+    navHome:"Home", navRoutes:"Routes", navAdd:"Add route", navSettings:"Settings",
+    reserveBanner:"Set your tax reserve percentage. This number must be confirmed with a tax professional. It is not a promise.",
+    reserveBannerBtn:"Open settings",
+    exampleBanner:"These are example routes so you can see how the app works. Clear them in Settings when you start logging your own.",
+    weekOf:"Week of {start} – {end}",
+    hoursEyebrow:"Weekly hours",
+    hoursLeft:"{n} hours left", hoursOver:"{n} hours over",
+    hoursWorked:"{worked} of {target} hours logged this week",
+    today:"Today", week:"This week", month:"This month",
+    gross:"Gross", reserve:"Tax reserve", spendable:"Spendable", miles:"Miles", gas:"Gas",
+    routesOne:"1 route", routesMany:"{n} routes", routesZero:"No routes",
+    addTitle:"Add route", editTitle:"Edit route",
+    fDate:"Date", fStart:"Start time", fEnd:"End time", fBase:"Base pay", fTips:"Tips",
+    fMiles:"Miles", fGas:"Gas spent", fNotes:"Notes", fNotesHint:"Optional. Station, block type, anything you want to remember.",
+    fReserve:"Reserve % for this route",
+    fReserveHintNew:"Comes from Settings and is saved with this route.",
+    fReserveHintEdit:"This route keeps the percentage it was saved with unless you change it here.",
+    preview:"This route", length:"Length", crossMidnight:"Crosses midnight",
+    save:"Save route", cancel:"Cancel", saved:"Route saved", updated:"Route updated", deleted:"Route deleted",
+    errDate:"Pick a date.", errTime:"Enter a start and an end time.", errBase:"Enter base pay of 0 or more.",
+    errNum:"Enter a number of 0 or more.", errSame:"Start and end can't be the same time.",
+    edit:"Edit", del:"Delete", editedAt:"Edited {when}", example:"Example",
+    confirmDeleteTitle:"Delete this route?",
+    confirmDeleteBody:"{route} will be removed from all totals. This can't be undone.",
+    confirmDeleteBtn:"Delete route",
+    routesTitle:"Routes", routesSub:"Newest first",
+    exportCsv:"Export CSV", downloadCsv:"Download CSV", copyCsv:"Copy CSV", closeCsv:"Close",
+    copied:"CSV copied", copyFail:"Couldn't copy. Select the text and copy it by hand.",
+    csvHelp:"If the download doesn't start, copy this text and paste it into a spreadsheet.",
+    noRoutes:"No routes yet. Tap Add route after your next block.",
+    settingsTitle:"Settings",
+    sReserve:"Tax reserve percentage",
+    sReserveHint:"Meant to cover federal self-employment tax, federal income tax, and Georgia income tax. Confirm the number with a tax professional. Changing it only affects new routes.",
+    sTarget:"Weekly hours target", sWeekStart:"Week starts on",
+    sWeekStartHint:"Weeks reset at 12:00 a.m. on this day. Changing it regroups routes but never changes them.",
+    sLang:"Language", sSave:"Save settings", settingsSaved:"Settings saved",
+    recalc:"Recalculate all routes with this %",
+    recalcTitle:"Recalculate every route?",
+    recalcBody:"All {n} saved routes will use {pct}% instead of the percentage each was saved with.",
+    recalcBtn:"Recalculate", recalcDone:"{n} routes recalculated",
+    clearExamples:"Clear example routes", clearExamplesDone:"Example routes cleared",
+    dataTitle:"Your data",
+    storageNote:"Routes are saved in this browser on this phone only. Export a CSV every week as a backup.",
+    checksTitle:"Math checks", checksHint:"Runs the known example week and reserve math from the build plan.",
+    checksRun:"Run checks", checksSum:"{p} of {t} checks passed",
+    chkLengths:"Route lengths: 8:00–12:30, 1:00–5:15, 9:00 p.m.–1:30 a.m.",
+    chkHours:"Example week shows “26.8 hours left” on a 40-hour target",
+    chkOver:"45 hours on a 40-hour target shows “5.0 hours over”",
+    chkReserve:"$60 base + $10 tips at 25% → $17.50 reserve, $52.50 spendable",
+    chkReserveOdd:"$83.47 at 27.5% → $22.95 reserve (rounded to the cent)",
+    chkWeek:"Sun 11:30 p.m. and Mon 12:30 a.m. land in different weeks (Monday start)",
+    chkWeekSun:"Same two routes land in the same week (Sunday start)",
+    days:["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+    csvHeaders:["date","start_time","end_time","route_hours","base_pay","tips","gross","reserve_percent","reserve_amount","spendable","miles","gas","notes","edited"],
+    csvTotal:"TOTAL", yes:"yes", no:"no",
+    footer:"Manual entry only. Not connected to Amazon. Amazon's payout statements are the official record.",
+    editedNoTime:"Edited",
+    shotBtn:"Fill from a screenshot", shotHint:"Screenshot the earnings screen in your Flex app, then pick it here. The app reads it on this phone. Nothing is sent to Amazon.",
+    shotLoading:"Getting the screenshot reader ready…", shotReading:"Reading screenshot {i} of {n}… {p}%",
+    shotNone:"Couldn't find a route in that screenshot. Try a screenshot of one day's earnings, or type the route in.",
+    shotFail:"Couldn't load the screenshot reader. Check your internet connection and try again.",
+    reviewTitle:"Check before saving", reviewHint:"These are the app's best guesses from your screenshot. Check every number against the Flex app. Miles and gas aren't on the screenshot, so add them here.",
+    reviewInclude:"Save this route", reviewSave:"Save checked routes", reviewSaved:"Saved: {n}", reviewNoneChecked:"Check at least one route to save.",
+    reviewRoute:"Route {n}", reviewText:"Show the text the app read", reviewFixErrors:"Fix the routes marked in red, or uncheck them.", prevWeek:"‹ Previous week", nextWeek:"Next week ›", thisWeekBtn:"Back to this week", pastWeek:"That week",
+    wLede:"Log each Flex route. See your hours toward your weekly target, your day, week and month totals, and a tax reserve set aside from every route.",
+    wReal:"Start with my real routes", wRealSub:"Starts empty. Your routes stay on this phone.",
+    wDemo:"Try the demo", wDemoSub:"Example routes you can edit and delete. Kept separate from your real routes.",
+    demoStripe:"DEMO · example routes", demoExit:"Use my routes",
+    modeTitle:"Mode", modeReal:"My routes", modeDemo:"Demo",
+    modeHint:"Demo routes are kept separate. Switching never mixes them with your real routes.",
+    resetDemo:"Reset demo routes", resetDemoDone:"Demo routes reset",
+    lastBackup:"Last backup: {when}", never:"never",
+    backupNudge:"You haven't backed up in a while. If this phone clears its browser data, unbacked routes are gone.",
+    backupNow:"Back up now",
+    restoreBtn:"Restore from a backup CSV",
+    restoreHint:"Use a CSV exported from this app. Restored routes go into My routes.",
+    restoreTitle:"Restore this backup?",
+    restoreBody:"This file has {n} from {from} to {to}. Routes you have now: {m}.",
+    restoreBodyBad:"{b} rows couldn't be read and will be skipped.",
+    restoreAdd:"Add missing routes", restoreReplace:"Replace all my routes",
+    restoreDone:"Restored: {a}. Already here: {d}.",
+    restoreBadFile:"That file isn't a Flex Driver Hub backup. Export a CSV from this app and try again.",
+    restoreEmpty:"That file is empty.", restoreNone:"No routes in that file could be read.",
+    installTitle:"Put it on your home screen",
+    installWhy:"It opens like an app, works without signal, and your phone is much less likely to clear your routes.",
+    installIos:"iPhone (Safari)", installIos1:"Tap the Share button.", installIos2:"Tap Add to Home Screen.", installIos3:"Tap Add.",
+    installAndroid:"Android (Chrome)", installAndroid1:"Tap the ⋮ menu.", installAndroid2:"Tap Install app or Add to Home screen."
+  },
+  es: {
+    appName:"Flex Driver Hub", conceptTag:"Versión 1",
+    navHome:"Inicio", navRoutes:"Rutas", navAdd:"Agregar ruta", navSettings:"Ajustes",
+    reserveBanner:"Configura tu porcentaje de reserva para impuestos. Este número debe confirmarlo un profesional de impuestos. No es una promesa.",
+    reserveBannerBtn:"Abrir ajustes",
+    exampleBanner:"Estas son rutas de ejemplo para que veas cómo funciona la app. Bórralas en Ajustes cuando empieces a registrar las tuyas.",
+    weekOf:"Semana del {start} al {end}",
+    hoursEyebrow:"Horas de la semana",
+    hoursLeft:"Te quedan {n} horas", hoursOver:"{n} horas de más",
+    hoursWorked:"{worked} de {target} horas registradas esta semana",
+    today:"Hoy", week:"Esta semana", month:"Este mes",
+    gross:"Bruto", reserve:"Reserva de impuestos", spendable:"Disponible", miles:"Millas", gas:"Gasolina",
+    routesOne:"1 ruta", routesMany:"{n} rutas", routesZero:"Sin rutas",
+    addTitle:"Agregar ruta", editTitle:"Editar ruta",
+    fDate:"Fecha", fStart:"Hora de inicio", fEnd:"Hora de fin", fBase:"Pago base", fTips:"Propinas",
+    fMiles:"Millas", fGas:"Gasto en gasolina", fNotes:"Notas", fNotesHint:"Opcional. Estación, tipo de bloque o lo que quieras recordar.",
+    fReserve:"% de reserva para esta ruta",
+    fReserveHintNew:"Viene de Ajustes y se guarda con esta ruta.",
+    fReserveHintEdit:"Esta ruta mantiene el porcentaje con el que se guardó, a menos que lo cambies aquí.",
+    preview:"Esta ruta", length:"Duración", crossMidnight:"Pasa de medianoche",
+    save:"Guardar ruta", cancel:"Cancelar", saved:"Ruta guardada", updated:"Ruta actualizada", deleted:"Ruta eliminada",
+    errDate:"Elige una fecha.", errTime:"Escribe la hora de inicio y la de fin.", errBase:"Escribe un pago base de 0 o más.",
+    errNum:"Escribe un número de 0 o más.", errSame:"La hora de inicio y la de fin no pueden ser iguales.",
+    edit:"Editar", del:"Eliminar", editedAt:"Editada {when}", example:"Ejemplo",
+    confirmDeleteTitle:"¿Eliminar esta ruta?",
+    confirmDeleteBody:"{route} se quitará de todos los totales. No se puede deshacer.",
+    confirmDeleteBtn:"Eliminar ruta",
+    routesTitle:"Rutas", routesSub:"Las más recientes primero",
+    exportCsv:"Exportar CSV", downloadCsv:"Descargar CSV", copyCsv:"Copiar CSV", closeCsv:"Cerrar",
+    copied:"CSV copiado", copyFail:"No se pudo copiar. Selecciona el texto y cópialo a mano.",
+    csvHelp:"Si la descarga no empieza, copia este texto y pégalo en una hoja de cálculo.",
+    noRoutes:"Todavía no hay rutas. Toca Agregar ruta después de tu próximo bloque.",
+    settingsTitle:"Ajustes",
+    sReserve:"Porcentaje de reserva para impuestos",
+    sReserveHint:"Para cubrir el impuesto federal de trabajo por cuenta propia, el impuesto federal sobre la renta y el impuesto sobre la renta de Georgia. Confirma el número con un profesional de impuestos. Cambiarlo solo afecta las rutas nuevas.",
+    sTarget:"Meta de horas por semana", sWeekStart:"La semana empieza el",
+    sWeekStartHint:"Las semanas se reinician a las 12:00 a. m. de este día. Cambiarlo reagrupa las rutas, pero nunca las modifica.",
+    sLang:"Idioma", sSave:"Guardar ajustes", settingsSaved:"Ajustes guardados",
+    recalc:"Recalcular todas las rutas con este %",
+    recalcTitle:"¿Recalcular todas las rutas?",
+    recalcBody:"Las {n} rutas guardadas usarán {pct}% en lugar del porcentaje con el que se guardó cada una.",
+    recalcBtn:"Recalcular", recalcDone:"{n} rutas recalculadas",
+    clearExamples:"Borrar rutas de ejemplo", clearExamplesDone:"Rutas de ejemplo borradas",
+    dataTitle:"Tus datos",
+    storageNote:"Las rutas se guardan solo en este navegador y en este teléfono. Exporta un CSV cada semana como respaldo.",
+    checksTitle:"Revisión de cálculos", checksHint:"Prueba la semana de ejemplo y los cálculos de reserva del plan.",
+    checksRun:"Ejecutar revisión", checksSum:"{p} de {t} revisiones aprobadas",
+    chkLengths:"Duración: 8:00–12:30, 1:00–5:15, 9:00 p. m.–1:30 a. m.",
+    chkHours:"La semana de ejemplo muestra “Te quedan 26.8 horas” con meta de 40",
+    chkOver:"45 horas con meta de 40 muestra “5.0 horas de más”",
+    chkReserve:"$60 base + $10 propinas al 25% → $17.50 de reserva, $52.50 disponible",
+    chkReserveOdd:"$83.47 al 27.5% → $22.95 de reserva (redondeado al centavo)",
+    chkWeek:"Dom 11:30 p. m. y lun 12:30 a. m. caen en semanas distintas (inicio lunes)",
+    chkWeekSun:"Las mismas dos rutas caen en la misma semana (inicio domingo)",
+    days:["domingo","lunes","martes","miércoles","jueves","viernes","sábado"],
+    csvHeaders:["fecha","hora_inicio","hora_fin","horas_ruta","pago_base","propinas","bruto","porcentaje_reserva","monto_reserva","disponible","millas","gasolina","notas","editada"],
+    csvTotal:"TOTAL", yes:"sí", no:"no",
+    footer:"Solo registro manual. No está conectada a Amazon. Los estados de pago de Amazon son el registro oficial.",
+    editedNoTime:"Editada",
+    shotBtn:"Llenar desde una captura de pantalla", shotHint:"Toma una captura de la pantalla de ganancias en tu app de Flex y elígela aquí. La app la lee en este teléfono. No se envía nada a Amazon.",
+    shotLoading:"Preparando el lector de capturas…", shotReading:"Leyendo captura {i} de {n}… {p}%",
+    shotNone:"No se encontró ninguna ruta en esa captura. Prueba con una captura de las ganancias de un día o escribe la ruta.",
+    shotFail:"No se pudo cargar el lector de capturas. Revisa tu conexión a internet e inténtalo de nuevo.",
+    reviewTitle:"Revisa antes de guardar", reviewHint:"Estos son los cálculos de la app a partir de tu captura. Compara cada número con la app de Flex. Las millas y la gasolina no aparecen en la captura; agrégalas aquí.",
+    reviewInclude:"Guardar esta ruta", reviewSave:"Guardar rutas marcadas", reviewSaved:"Guardadas: {n}", reviewNoneChecked:"Marca al menos una ruta para guardar.",
+    reviewRoute:"Ruta {n}", reviewText:"Ver el texto que leyó la app", reviewFixErrors:"Corrige las rutas marcadas en rojo o desmárcalas.", prevWeek:"‹ Semana anterior", nextWeek:"Semana siguiente ›", thisWeekBtn:"Volver a esta semana", pastWeek:"Esa semana",
+    wLede:"Registra cada ruta de Flex. Ve tus horas hacia tu meta semanal, tus totales del día, la semana y el mes, y una reserva para impuestos apartada de cada ruta.",
+    wReal:"Empezar con mis rutas reales", wRealSub:"Empieza vacía. Tus rutas se quedan en este teléfono.",
+    wDemo:"Probar la demostración", wDemoSub:"Rutas de ejemplo que puedes editar y borrar. Separadas de tus rutas reales.",
+    demoStripe:"DEMO · rutas de ejemplo", demoExit:"Usar mis rutas",
+    modeTitle:"Modo", modeReal:"Mis rutas", modeDemo:"Demo",
+    modeHint:"Las rutas de demostración se guardan aparte. Cambiar de modo nunca las mezcla con tus rutas reales.",
+    resetDemo:"Reiniciar rutas de demostración", resetDemoDone:"Rutas de demostración reiniciadas",
+    lastBackup:"Último respaldo: {when}", never:"nunca",
+    backupNudge:"Hace tiempo que no haces un respaldo. Si este teléfono borra los datos del navegador, las rutas sin respaldo se pierden.",
+    backupNow:"Respaldar ahora",
+    restoreBtn:"Restaurar desde un CSV de respaldo",
+    restoreHint:"Usa un CSV exportado desde esta app. Las rutas restauradas van a Mis rutas.",
+    restoreTitle:"¿Restaurar este respaldo?",
+    restoreBody:"Este archivo tiene {n} del {from} al {to}. Rutas que tienes ahora: {m}.",
+    restoreBodyBad:"{b} filas no se pudieron leer y se omitirán.",
+    restoreAdd:"Agregar las que faltan", restoreReplace:"Reemplazar todas mis rutas",
+    restoreDone:"Restauradas: {a}. Ya estaban: {d}.",
+    restoreBadFile:"Ese archivo no es un respaldo de Flex Driver Hub. Exporta un CSV desde esta app e inténtalo de nuevo.",
+    restoreEmpty:"Ese archivo está vacío.", restoreNone:"No se pudo leer ninguna ruta de ese archivo.",
+    installTitle:"Ponla en tu pantalla de inicio",
+    installWhy:"Se abre como una app, funciona sin señal y es mucho menos probable que tu teléfono borre tus rutas.",
+    installIos:"iPhone (Safari)", installIos1:"Toca el botón Compartir.", installIos2:"Toca Agregar a pantalla de inicio.", installIos3:"Toca Agregar.",
+    installAndroid:"Android (Chrome)", installAndroid1:"Toca el menú ⋮.", installAndroid2:"Toca Instalar app o Agregar a la pantalla principal."
+  }
+};
+
+/* =========================================================
+   2. CALC — pure math, no screens, no storage
+   ========================================================= */
+const Calc = {
+  toMin(hhmm){ const [h,m] = hhmm.split(":").map(Number); return h*60 + m; },
+  lengthMin(start, end){ let a = Calc.toMin(start), b = Calc.toMin(end); if (b < a) b += 1440; return b - a; },
+  cents(x){ const n = Number(x); return Number.isFinite(n) ? Math.round(n*100) : 0; },
+  reserve(grossCents, pct){ return Math.round(grossCents * pct / 100); },
+  parseDate(iso){ const [y,m,d] = iso.split("-").map(Number); return new Date(y, m-1, d); },
+  iso(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); },
+  addDays(iso, n){ const d = Calc.parseDate(iso); d.setDate(d.getDate()+n); return Calc.iso(d); },
+  weekStart(iso, startDay){ const d = Calc.parseDate(iso); const back = (d.getDay() - startDay + 7) % 7; d.setDate(d.getDate()-back); return Calc.iso(d); },
+  hoursLeft(targetMin, workedMin){
+    const left = targetMin - workedMin;
+    return { over: left < 0, text: (Math.round(Math.abs(left)/6)/10).toFixed(1) };
+  },
+  derive(r){
+    const minutes = Calc.lengthMin(r.start, r.end);
+    const gross = r.baseCents + r.tipsCents;
+    return { ...r, minutes, gross, spendable: gross - r.reserveCents };
+  },
+  totals(list){
+    return list.reduce((t,r)=>{ t.count++; t.minutes+=r.minutes; t.gross+=r.gross; t.reserve+=r.reserveCents;
+      t.spendable+=r.spendable; t.miles+=r.miles; t.gas+=r.gasCents; return t; },
+      {count:0,minutes:0,gross:0,reserve:0,spendable:0,miles:0,gas:0});
+  }
+};
+
+/* =========================================================
+   3. STORE — the data layer. Screens only talk to this.
+      Later, swap localStorage for an account backend here.
+   ========================================================= */
+const Store = (() => {
+  const PREFS = "fdh.prefs", REAL = "fdh.real", DEMO = "fdh.demo", OLD = "flexDriverHub.v1";
+  const mem = {};
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+  const read = k => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : null; } catch(e) { return null; } };
+  const write = (k, v) => { mem[k] = v; try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) { /* memory only */ } };
+  const get = k => (k in mem) ? mem[k] : (mem[k] = read(k));
+  const defaults = () => ({ reservePct: 0, reserveSet: false, targetHours: 40, weekStart: 1 });
+  const valid = d => d && d.settings && Array.isArray(d.routes);
+
+  function demoSeed(){
+    const today = Calc.iso(new Date());
+    const mk = (offset, start, end, base, tips, miles, gas, notes) => {
+      const baseCents = Calc.cents(base), tipsCents = Calc.cents(tips);
+      return { id: uid(), date: Calc.addDays(today, -offset), start, end, baseCents, tipsCents,
+        miles, gasCents: Calc.cents(gas), notes, reservePct: 25,
+        reserveCents: Calc.reserve(baseCents+tipsCents, 25), edited:false, editedAt:null,
+        createdAt: Date.now() - offset*86400000 };
+    };
+    return {
+      settings: { reservePct: 25, reserveSet: true, targetHours: 40, weekStart: 1 },
+      routes: [
+        mk(0, "08:00","12:30", 72, 8, 41.2, 9.5, "Whole Foods block, 2 stops cancelled"),
+        mk(1, "13:00","17:15", 68, 0, 38.6, 8.75, ""),
+        mk(2, "21:00","01:30", 81, 14.5, 52.0, 11.2, "Night logistics, ran past midnight"),
+        mk(5, "10:00","13:30", 57, 6, 33.4, 7.4, ""),
+        mk(9, "07:30","11:00", 54, 0, 29.9, 6.8, "Short block, light traffic"),
+        mk(12, "15:00","19:00", 76, 11, 44.7, 10.1, ""),
+        mk(16, "09:00","12:00", 52, 4, 27.3, 6.2, "")
+      ]
+    };
+  }
+  function prefs(){
+    let p = get(PREFS);
+    if (!p){
+      p = { mode: null, lang: "en", lastBackup: null };
+      const old = read(OLD);  /* carry real routes over from the first concept */
+      if (valid(old)){
+        p.lang = old.settings.lang || "en";
+        const mine = old.routes.filter(r => !r.example);
+        if (mine.length){ const { lang, ...s } = old.settings; write(REAL, { settings: { ...defaults(), ...s }, routes: mine }); p.mode = "real"; }
+        try { localStorage.removeItem(OLD); } catch(e) {}
+      }
+      write(PREFS, p);
+    }
+    return p;
+  }
+  const key = () => prefs().mode === "demo" ? DEMO : REAL;
+  function ds(k = key()){
+    let d = get(k);
+    if (!valid(d)){ d = k === DEMO ? demoSeed() : { settings: defaults(), routes: [] }; write(k, d); }
+    return d;
+  }
+  const save = () => write(key(), ds());
+
+  return {
+    get mode(){ return prefs().mode; },
+    get prefs(){ return prefs(); },
+    setPrefs(patch){ write(PREFS, { ...prefs(), ...patch }); },
+    get settings(){ return { ...ds().settings, lang: prefs().lang }; },
+    saveSettings(patch){
+      const { lang, ...rest } = patch;
+      if (lang) this.setPrefs({ lang });
+      if (Object.keys(rest).length){ Object.assign(ds().settings, rest); save(); }
+    },
+    routes(){ return ds().routes.map(Calc.derive); },
+    realCount(){ return ds(REAL).routes.length; },
+    get(id){ const r = ds().routes.find(x=>x.id===id); return r ? Calc.derive(r) : null; },
+    upsert(input){
+      const d = ds();
+      const record = { ...input, reserveCents: Calc.reserve(input.baseCents + input.tipsCents, input.reservePct) };
+      const i = d.routes.findIndex(x=>x.id===input.id);
+      if (i >= 0) d.routes[i] = { ...d.routes[i], ...record, edited:true, editedAt: Date.now() };
+      else d.routes.push({ ...record, id: uid(), edited:false, editedAt:null, createdAt: Date.now() });
+      save();
+      return i >= 0 ? "updated" : "saved";
+    },
+    remove(id){ const d = ds(); d.routes = d.routes.filter(x=>x.id!==id); save(); },
+    recalcAll(pct){
+      const d = ds();
+      d.routes.forEach(r=>{ r.reservePct = pct; r.reserveCents = Calc.reserve(r.baseCents+r.tipsCents, pct); r.edited = true; r.editedAt = Date.now(); });
+      save(); return d.routes.length;
+    },
+    resetDemo(){ write(DEMO, demoSeed()); },
+    importRoutes(list, replace){
+      const d = ds(REAL);
+      const sig = r => [r.date, r.start, r.end, r.baseCents, r.tipsCents].join("|");
+      const kept = replace ? [] : d.routes.slice();
+      const seen = new Set(kept.map(sig));
+      let added = 0, dup = 0;
+      list.forEach(r => { const s = sig(r); if (seen.has(s)){ dup++; return; } seen.add(s); kept.push({ ...r, id: uid(), createdAt: Date.now() }); added++; });
+      write(REAL, { settings: d.settings, routes: kept });
+      this.setPrefs({ mode: "real" });
+      return { added, dup };
+    }
+  };
+})();
+
+/* =========================================================
+   4. SCREENS
+   ========================================================= */
+const ui = { weekOffset:0, view:"home", editId:null, errors:{}, csvOpen:false, checks:null, modal:null, draft:null };
+const $app = document.getElementById("app");
+const $tabs = document.getElementById("tabs");
+const $layer = document.getElementById("layer");
+
+function t(key, vars){
+  const lang = Store.settings.lang;
+  let s = (STRINGS[lang] && STRINGS[lang][key] !== undefined) ? STRINGS[lang][key] : STRINGS.en[key];
+  if (s === undefined) return key;
+  if (vars && typeof s === "string") for (const k in vars) s = s.split("{"+k+"}").join(vars[k]);
+  return s;
+}
+const loc = () => Store.settings.lang === "es" ? "es-US" : "en-US";
+const money = c => new Intl.NumberFormat(loc(), {style:"currency", currency:"USD"}).format(c/100);
+const one = x => new Intl.NumberFormat(loc(), {minimumFractionDigits:1, maximumFractionDigits:1}).format(x);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtDate = (iso, o) => new Intl.DateTimeFormat(loc(), o || {weekday:"short", month:"short", day:"numeric"}).format(Calc.parseDate(iso));
+const fmtTime = hhmm => { const [h,m] = hhmm.split(":").map(Number); return new Intl.DateTimeFormat(loc(), {hour:"numeric", minute:"2-digit"}).format(new Date(2000,0,1,h,m)); };
+const countLabel = n => n === 0 ? t("routesZero") : n === 1 ? t("routesOne") : t("routesMany", {n});
+const todayIso = () => Calc.iso(new Date());
+
+function periods(){
+  const s = Store.settings, today = todayIso(), all = Store.routes();
+  const wk = Calc.addDays(Calc.weekStart(today, s.weekStart), -7 * ui.weekOffset);
+  return {
+    weekStartIso: wk,
+    today: all.filter(r => r.date === today),
+    week: all.filter(r => Calc.weekStart(r.date, s.weekStart) === wk),
+    month: all.filter(r => r.date.slice(0,7) === today.slice(0,7))
+  };
+}
+
+function banners(){
+  let h = "";
+  if (!Store.settings.reserveSet) h += `<div class="banner warn" role="status"><div><strong>!</strong> ${esc(t("reserveBanner"))}</div>${ui.view!=="settings" ? `<button class="linkbtn" data-act="go" data-view="settings">${esc(t("reserveBannerBtn"))}</button>` : ""}</div>`;
+  if (ui.view === "home" && Store.mode === "real" && Store.routes().length > 0){
+    const lb = Store.prefs.lastBackup;
+    if (!lb || Date.now() - lb > 7*86400000) h += `<div class="banner info"><div>${esc(t("backupNudge"))} ${esc(t("lastBackup",{when: lastBackupText()}))}</div><button class="linkbtn" data-act="go-export">${esc(t("backupNow"))}</button></div>`;
+  }
+  return h;
+}
+
+function lastBackupText(){
+  const lb = Store.prefs.lastBackup;
+  return lb ? new Intl.DateTimeFormat(loc(), {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"}).format(new Date(lb)) : t("never");
+}
+function header(title, sub){
+  const stripe = Store.mode === "demo" ? `<div class="demo-stripe"><div class="in"><span>${esc(t("demoStripe"))}</span><button type="button" data-act="mode" data-mode="real">${esc(t("demoExit"))}</button></div></div>` : "";
+  return stripe + `<header class="top"><div class="top-row"><h1>${esc(title)}</h1><span class="tag">${esc(t("conceptTag"))}</span></div>${sub ? `<div class="sub">${esc(sub)}</div>` : ""}</header>`;
+}
+
+function totalsCard(title, list){
+  const x = Calc.totals(list);
+  return `<section class="card tot" aria-label="${esc(title)}">
+    <div class="tot-head"><h2>${esc(title)}</h2><span class="count num">${esc(countLabel(x.count))}</span></div>
+    <div class="tot-grid num">
+      <div><div class="k">${esc(t("gross"))}</div><div class="v">${money(x.gross)}</div></div>
+      <div><div class="k">${esc(t("reserve"))}</div><div class="v">${money(x.reserve)}</div></div>
+      <div><div class="k">${esc(t("spendable"))}</div><div class="v spend">${money(x.spendable)}</div></div>
+    </div>
+    <div class="tot-foot num"><span>${esc(t("miles"))} <b>${one(x.miles)}</b></span><span>${esc(t("gas"))} <b>${money(x.gas)}</b></span></div>
+  </section>`;
+}
+
+function viewHome(){
+  const s = Store.settings, p = periods();
+  const worked = Calc.totals(p.week).minutes, target = s.targetHours * 60;
+  const hl = Calc.hoursLeft(target, worked);
+  const pct = target > 0 ? Math.min(100, worked/target*100) : 100;
+  const end = Calc.addDays(p.weekStartIso, 6);
+  const sub = t("weekOf", {start: fmtDate(p.weekStartIso, {month:"short", day:"numeric"}), end: fmtDate(end, {month:"short", day:"numeric"})});
+  return header(t("appName"), sub) + `<main>
+    ${banners()}
+    <section class="hours" aria-live="polite">
+      <div class="eyebrow">${esc(t("hoursEyebrow"))}</div>
+      <div class="big num ${hl.over ? "over" : ""}">${esc(t(hl.over ? "hoursOver" : "hoursLeft", {n: hl.text}))}</div>
+      <div class="bar ${hl.over ? "over" : ""}" role="progressbar" aria-valuemin="0" aria-valuemax="${s.targetHours}" aria-valuenow="${(worked/60).toFixed(1)}"><span style="width:${pct}%"></span></div>
+      <div class="meta num">${esc(t("hoursWorked", {worked: one(worked/60), target: s.targetHours}))}</div>
+    </section>
+    <div class="row-actions" style="justify-content:space-between">
+      <button type="button" class="btn" data-act="week" data-step="1">${esc(t("prevWeek"))}</button>
+      ${ui.weekOffset > 0 ? `<button type="button" class="btn" data-act="week" data-step="-1">${esc(t("nextWeek"))}</button>` : ""}
+    </div>
+    ${ui.weekOffset > 0 ? `<button type="button" class="btn primary block" data-act="week" data-step="0">${esc(t("thisWeekBtn"))}</button>` : ""}
+    ${ui.weekOffset === 0 ? totalsCard(t("today"), p.today) : ""}
+    ${totalsCard(t(ui.weekOffset === 0 ? "week" : "pastWeek"), p.week)}
+    ${ui.weekOffset === 0 ? totalsCard(t("month"), p.month) : ""}
+    <p class="foot-note">${esc(t("footer"))}</p>
+  </main>`;
+}
+
+function routeRow(r){
+  const chips = [];
+  if (Calc.toMin(r.end) < Calc.toMin(r.start)) chips.push(`<span class="chip mid">${esc(t("crossMidnight"))}</span>`);
+  if (r.edited) chips.push(`<span class="chip ed">${esc(r.editedAt ? t("editedAt", {when: new Intl.DateTimeFormat(loc(), {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"}).format(new Date(r.editedAt))}) : t("editedNoTime"))}</span>`);
+  return `<article class="route ${r.edited ? "edited" : ""}">
+    <div class="route-top"><span class="route-date">${esc(fmtDate(r.date))}</span>
+      <span class="route-time num">${esc(fmtTime(r.start))} – ${esc(fmtTime(r.end))} · ${one(r.minutes/60)} h</span></div>
+    <div class="route-money num">
+      <span>${esc(t("gross"))} <b>${money(r.gross)}</b></span>
+      <span>${esc(t("reserve"))} <b>${money(r.reserveCents)}</b> (${esc(r.reservePct)}%)</span>
+      <span>${esc(t("spendable"))} <b>${money(r.spendable)}</b></span>
+      <span>${esc(t("miles"))} <b>${one(r.miles)}</b></span>
+      <span>${esc(t("gas"))} <b>${money(r.gasCents)}</b></span>
+    </div>
+    ${r.notes ? `<div class="route-notes">${esc(r.notes)}</div>` : ""}
+    ${chips.length ? `<div class="chips">${chips.join("")}</div>` : ""}
+    <div class="row-actions">
+      <button class="btn" data-act="edit" data-id="${r.id}">${esc(t("edit"))}</button>
+      <button class="btn ghost-danger" data-act="ask-delete" data-id="${r.id}">${esc(t("del"))}</button>
+    </div>
+  </article>`;
+}
+
+function viewRoutes(){
+  const list = Store.routes().sort((a,b)=> (b.date+b.start).localeCompare(a.date+a.start));
+  return header(t("routesTitle"), t("routesSub")) + `<main>
+    ${banners()}
+    <div class="section-head"><span class="sub num">${esc(countLabel(list.length))}</span>
+      <button class="btn primary" data-act="export">${esc(t("exportCsv"))}</button></div>
+    ${ui.csvOpen ? `<section class="card csv">
+      <p class="foot-note" style="text-align:left;margin:0">${esc(t("csvHelp"))}</p>
+      <label for="csvText" class="tag" style="opacity:1">CSV</label>
+      <textarea id="csvText" readonly>${esc(buildCsv())}</textarea>
+      <div class="row-actions"><button class="btn primary" data-act="copy-csv">${esc(t("copyCsv"))}</button>
+      <button class="btn" data-act="download-csv">${esc(t("downloadCsv"))}</button>
+      <button class="btn" data-act="close-csv">${esc(t("closeCsv"))}</button></div>
+    </section>` : ""}
+    ${list.length ? list.map(routeRow).join("") : `<div class="empty card">${esc(t("noRoutes"))}</div>`}
+  </main>`;
+}
+
+function formDraft(){
+  if (ui.draft) return ui.draft;
+  if (ui.editId){
+    const r = Store.get(ui.editId);
+    if (r) return { date:r.date, start:r.start, end:r.end, base:(r.baseCents/100).toFixed(2), tips:(r.tipsCents/100).toFixed(2),
+      miles:String(r.miles), gas:(r.gasCents/100).toFixed(2), notes:r.notes, reservePct:String(r.reservePct) };
+  }
+  return { date: todayIso(), start:"", end:"", base:"", tips:"0", miles:"", gas:"0", notes:"", reservePct:String(Store.settings.reservePct) };
+}
+
+function previewHtml(d){
+  const ok = /^\d{2}:\d{2}$/.test(d.start) && /^\d{2}:\d{2}$/.test(d.end);
+  const mins = ok ? Calc.lengthMin(d.start, d.end) : 0;
+  const gross = Calc.cents(d.base) + Calc.cents(d.tips);
+  const pct = Number(d.reservePct) || 0;
+  const res = Calc.reserve(gross, pct);
+  return `<h3>${esc(t("preview"))}</h3>
+    <span class="k">${esc(t("length"))}</span><span class="v num">${ok ? one(mins/60)+" h" : "—"}${ok && Calc.toMin(d.end) < Calc.toMin(d.start) ? " · "+esc(t("crossMidnight")) : ""}</span>
+    <span class="k">${esc(t("gross"))}</span><span class="v num">${money(gross)}</span>
+    <span class="k">${esc(t("reserve"))} (${esc(one(pct))}%)</span><span class="v num">${money(res)}</span>
+    <span class="k">${esc(t("spendable"))}</span><span class="v num" style="color:var(--good)">${money(gross-res)}</span>`;
+}
+
+function field(id, labelKey, inner, hint){
+  const err = ui.errors[id];
+  return `<div class="field"><label for="${id}">${esc(t(labelKey))}</label>${inner}${hint ? `<div class="hint">${esc(hint)}</div>` : ""}${err ? `<div class="err" id="${id}-err">${esc(t(err))}</div>` : ""}</div>`;
+}
+const inv = id => ui.errors[id] ? ` aria-invalid="true" aria-describedby="${id}-err"` : "";
+
+function viewForm(){
+  const d = formDraft(), editing = !!ui.editId;
+  return header(t(editing ? "editTitle" : "addTitle")) + `<main>
+    ${editing ? "" : `<section class="card" id="shotCard" style="display:grid;gap:8px">
+      <label class="btn block primary filebtn">${esc(t("shotBtn"))}<input type="file" id="shotFile" accept="image/*" multiple></label>
+      <p class="mutedp" id="shotStatus" role="status">${esc(t("shotHint"))}</p>
+    </section>`}
+    <form id="routeForm" class="card" novalidate>
+      ${field("date","fDate", `<input id="date" name="date" type="date" value="${esc(d.date)}"${inv("date")}>`)}
+      <div class="pair">
+        ${field("start","fStart", `<input id="start" name="start" type="time" value="${esc(d.start)}"${inv("start")}>`)}
+        ${field("end","fEnd", `<input id="end" name="end" type="time" value="${esc(d.end)}"${inv("start")}>`)}
+      </div>
+      <div class="pair">
+        ${field("base","fBase", `<div class="prefix"><input id="base" name="base" inputmode="decimal" value="${esc(d.base)}" placeholder="0.00"${inv("base")}></div>`)}
+        ${field("tips","fTips", `<div class="prefix"><input id="tips" name="tips" inputmode="decimal" value="${esc(d.tips)}" placeholder="0.00"${inv("tips")}></div>`)}
+      </div>
+      <div class="pair">
+        ${field("miles","fMiles", `<input id="miles" name="miles" inputmode="decimal" value="${esc(d.miles)}" placeholder="0.0"${inv("miles")}>`)}
+        ${field("gas","fGas", `<div class="prefix"><input id="gas" name="gas" inputmode="decimal" value="${esc(d.gas)}" placeholder="0.00"${inv("gas")}></div>`)}
+      </div>
+      ${field("reservePct","fReserve", `<input id="reservePct" name="reservePct" inputmode="decimal" value="${esc(d.reservePct)}"${inv("reservePct")}>`, t(editing ? "fReserveHintEdit" : "fReserveHintNew"))}
+      ${field("notes","fNotes", `<textarea id="notes" name="notes">${esc(d.notes)}</textarea>`, t("fNotesHint"))}
+      <div class="preview" id="preview">${previewHtml(d)}</div>
+      <div class="row-actions">
+        <button type="button" class="btn" data-act="cancel-form">${esc(t("cancel"))}</button>
+        <button type="submit" class="btn primary" style="flex:1">${esc(t("save"))}</button>
+      </div>
+    </form>
+  </main>`;
+}
+
+function viewSettings(){
+  const s = Store.settings;
+  const opts = t("days").map((n,i)=>`<option value="${i}" ${i===s.weekStart?"selected":""}>${esc(n.charAt(0).toUpperCase()+n.slice(1))}</option>`).join("");
+  let checks = "";
+  if (ui.checks){
+    const p = ui.checks.filter(c=>c.pass).length;
+    checks = `<div class="checks" aria-live="polite"><div class="checks-sum">${esc(t("checksSum",{p, t: ui.checks.length}))}</div>
+      ${ui.checks.map(c=>`<div class="check ${c.pass?"pass":"fail"}"><span class="mark" aria-hidden="true">${c.pass?"✓":"✗"}</span><div>${esc(t(c.key))}<small class="num">${esc(c.detail)}</small></div></div>`).join("")}</div>`;
+  }
+  return header(t("settingsTitle")) + `<main>
+    ${banners()}
+    <form id="settingsForm" class="card" novalidate>
+      ${field("sReservePct","sReserve", `<input id="sReservePct" inputmode="decimal" value="${esc(s.reservePct)}"${inv("sReservePct")}>`, t("sReserveHint"))}
+      ${field("sTarget","sTarget", `<input id="sTarget" inputmode="numeric" value="${esc(s.targetHours)}"${inv("sTarget")}>`)}
+      ${field("sWeekStart","sWeekStart", `<select id="sWeekStart">${opts}</select>`, t("sWeekStartHint"))}
+      <button type="submit" class="btn primary block">${esc(t("sSave"))}</button>
+      <button type="button" class="btn block" data-act="ask-recalc">${esc(t("recalc"))}</button>
+    </form>
+    <section class="card" style="display:grid;gap:10px">
+      <h2 style="font-size:22px">${esc(t("sLang"))}</h2>
+      <div class="seg" role="group" aria-label="${esc(t("sLang"))}">
+        <button type="button" data-act="lang" data-lang="en" aria-pressed="${s.lang==="en"}">English</button>
+        <button type="button" data-act="lang" data-lang="es" aria-pressed="${s.lang==="es"}">Español</button>
+      </div>
+    </section>
+    <section class="card" style="display:grid;gap:10px">
+      <h2 style="font-size:22px">${esc(t("modeTitle"))}</h2>
+      <div class="seg" role="group" aria-label="${esc(t("modeTitle"))}">
+        <button type="button" data-act="mode" data-mode="real" aria-pressed="${Store.mode==="real"}">${esc(t("modeReal"))}</button>
+        <button type="button" data-act="mode" data-mode="demo" aria-pressed="${Store.mode==="demo"}">${esc(t("modeDemo"))}</button>
+      </div>
+      <p class="mutedp">${esc(t("modeHint"))}</p>
+      ${Store.mode === "demo" ? `<button type="button" class="btn block" data-act="reset-demo">${esc(t("resetDemo"))}</button>` : ""}
+    </section>
+    <section class="card" style="display:grid;gap:10px">
+      <h2 style="font-size:22px">${esc(t("dataTitle"))}</h2>
+      <p class="mutedp">${esc(t("storageNote"))}</p>
+      <p class="mutedp num"><b>${esc(t("lastBackup",{when: lastBackupText()}))}</b></p>
+      <button type="button" class="btn block primary" data-act="go-export">${esc(t("exportCsv"))}</button>
+      <label class="btn block filebtn">${esc(t("restoreBtn"))}<input type="file" id="restoreFile" accept=".csv,text/csv"></label>
+      <p class="mutedp">${esc(t("restoreHint"))}</p>
+    </section>
+    ${isInstalled() ? "" : `<section class="card" style="display:grid;gap:8px">
+      <h2 style="font-size:22px">${esc(t("installTitle"))}</h2>
+      <p class="mutedp">${esc(t("installWhy"))}</p>
+      <div class="steps-title">${esc(t("installIos"))}</div>
+      <ol class="steps"><li>${esc(t("installIos1"))}</li><li>${esc(t("installIos2"))}</li><li>${esc(t("installIos3"))}</li></ol>
+      <div class="steps-title">${esc(t("installAndroid"))}</div>
+      <ol class="steps"><li>${esc(t("installAndroid1"))}</li><li>${esc(t("installAndroid2"))}</li></ol>
+    </section>`}
+    <section class="card" style="display:grid;gap:10px">
+      <h2 style="font-size:22px">${esc(t("checksTitle"))}</h2>
+      <p style="margin:0;color:var(--muted);font-size:15px">${esc(t("checksHint"))}</p>
+      <button type="button" class="btn block" data-act="run-checks">${esc(t("checksRun"))}</button>
+      ${checks}
+    </section>
+  </main>`;
+}
+
+function isInstalled(){
+  try { return window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; } catch(e) { return false; }
+}
+function viewWelcome(){
+  const lang = Store.settings.lang;
+  return header(t("appName")) + `<div class="welcome">
+    <p class="lede">${esc(t("wLede"))}</p>
+    <button type="button" class="choice primary" data-act="mode" data-mode="real"><b>${esc(t("wReal"))}</b><span>${esc(t("wRealSub"))}</span></button>
+    <button type="button" class="choice" data-act="mode" data-mode="demo"><b>${esc(t("wDemo"))}</b><span>${esc(t("wDemoSub"))}</span></button>
+    <div class="seg" role="group" aria-label="${esc(t("sLang"))}">
+      <button type="button" data-act="lang" data-lang="en" aria-pressed="${lang==="en"}">English</button>
+      <button type="button" data-act="lang" data-lang="es" aria-pressed="${lang==="es"}">Español</button>
+    </div>
+    <p class="foot-note">${esc(t("footer"))}</p>
+  </div>`;
+}
+
+function viewReview(){
+  const items = ui.review ? ui.review.items : [];
+  const errs = ui.review ? (ui.review.errors || {}) : {};
+  const inp = (i, k, type, val, extra="") => `<input id="rv${k}${i}" data-rv="${i}" data-k="${k}" type="${type}" value="${esc(val)}" ${extra}${errs[i] && errs[i][k] ? ' aria-invalid="true"' : ""}>`;
+  const cards = items.map((it, i) => `<section class="card" style="display:grid;gap:12px">
+      <label style="display:flex;gap:10px;align-items:center;font-weight:700;min-height:44px">
+        <input type="checkbox" data-rv="${i}" data-k="keep" ${it.keep ? "checked" : ""} style="width:24px;min-height:24px">${esc(t("reviewRoute",{n:i+1}))} · ${esc(t("reviewInclude"))}</label>
+      <div class="field"><label for="rvdate${i}">${esc(t("fDate"))}</label>${inp(i,"date","date",it.date)}</div>
+      <div class="pair"><div class="field"><label for="rvstart${i}">${esc(t("fStart"))}</label>${inp(i,"start","time",it.start)}</div>
+        <div class="field"><label for="rvend${i}">${esc(t("fEnd"))}</label>${inp(i,"end","time",it.end)}</div></div>
+      <div class="pair"><div class="field"><label for="rvbase${i}">${esc(t("fBase"))}</label><div class="prefix">${inp(i,"base","text",it.base,'inputmode="decimal"')}</div></div>
+        <div class="field"><label for="rvtips${i}">${esc(t("fTips"))}</label><div class="prefix">${inp(i,"tips","text",it.tips,'inputmode="decimal"')}</div></div></div>
+      <div class="pair"><div class="field"><label for="rvmiles${i}">${esc(t("fMiles"))}</label>${inp(i,"miles","text",it.miles,'inputmode="decimal" placeholder="0.0"')}</div>
+        <div class="field"><label for="rvgas${i}">${esc(t("fGas"))}</label><div class="prefix">${inp(i,"gas","text",it.gas,'inputmode="decimal"')}</div></div></div>
+    </section>`).join("");
+  return header(t("reviewTitle")) + `<main>
+    <div class="banner warn"><div>${esc(t("reviewHint"))}</div></div>
+    ${ui.review && ui.review.errors && Object.keys(ui.review.errors).length ? `<div class="banner warn"><strong>${esc(t("reviewFixErrors"))}</strong></div>` : ""}
+    ${cards}
+    <div class="row-actions"><button type="button" class="btn" data-act="cancel-review">${esc(t("cancel"))}</button>
+      <button type="button" class="btn primary" style="flex:1" data-act="save-review">${esc(t("reviewSave"))}</button></div>
+    <details class="card"><summary style="min-height:44px;cursor:pointer;font-weight:600">${esc(t("reviewText"))}</summary>
+      <pre style="white-space:pre-wrap;font-size:13px;color:var(--muted);overflow-wrap:anywhere">${esc(ui.review ? ui.review.raw : "")}</pre></details>
+  </main>`;
+}
+
+function renderTabs(){
+  const icon = {
+    home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
+    routes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+    add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+    settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>'
+  };
+  const b = (view, key, extra="") => `<button type="button" data-act="go" data-view="${view}" class="${extra}" ${ui.view===view || (view==="add" && ui.view==="form") ? 'aria-current="page"' : ""}>${icon[view]}<span>${esc(t(key))}</span></button>`;
+  $tabs.setAttribute("aria-label", t("navHome"));
+  $tabs.innerHTML = `<div class="in">${b("home","navHome")}${b("routes","navRoutes")}${b("add","navAdd","add")}${b("settings","navSettings")}</div>`;
+}
+
+function renderModal(){
+  if (!ui.modal){ $layer.innerHTML = ""; return; }
+  const m = ui.modal;
+  $layer.innerHTML = `<div class="overlay" data-act="modal-cancel"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle" data-stop>
+    <h2 id="dlgTitle">${esc(m.title)}</h2><p>${esc(m.body)}</p>
+    ${m.note ? `<p>${esc(m.note)}</p>` : ""}
+    <div class="row-actions"><button class="btn" data-act="modal-cancel">${esc(t("cancel"))}</button>
+    ${m.alt ? `<button class="btn danger" data-act="modal-alt">${esc(m.alt)}</button>` : ""}
+    <button class="btn ${m.danger ? "danger" : "primary"}" data-act="modal-ok" id="dlgOk">${esc(m.ok)}</button></div></div></div>`;
+  document.getElementById("dlgOk").focus();
+}
+
+function render(){
+  document.documentElement.lang = Store.settings.lang;
+  if (!Store.mode){ $app.innerHTML = viewWelcome(); $tabs.hidden = true; renderModal(); return; }
+  $tabs.hidden = false;
+  const v = ui.view;
+  $app.innerHTML = v==="home" ? viewHome() : v==="routes" ? viewRoutes() : v==="form" ? viewForm() : v==="review" ? viewReview() : viewSettings();
+  renderTabs(); renderModal();
+}
+
+let toastTimer;
+function toast(msg){
+  clearTimeout(toastTimer);
+  let el = document.getElementById("toast");
+  if (!el){ el = document.createElement("div"); el.id = "toast"; el.className = "toast"; el.setAttribute("role","status"); document.body.appendChild(el); }
+  el.textContent = msg; el.hidden = false;
+  toastTimer = setTimeout(()=>{ el.hidden = true; }, 2200);
+}
+
+function go(view){ ui.view = view; ui.errors = {}; ui.draft = null; if (view !== "routes") ui.csvOpen = false; render(); window.scrollTo(0,0); }
+
+/* =========================================================
+   5. CSV
+   ========================================================= */
+function csvCell(v){ const s = String(v ?? ""); return /[",\n\r]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; }
+function buildCsv(){
+  const list = Store.routes().sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));
+  const d2 = c => (c/100).toFixed(2);
+  const rows = [t("csvHeaders")];
+  list.forEach(r => rows.push([r.date, r.start, r.end, (r.minutes/60).toFixed(2), d2(r.baseCents), d2(r.tipsCents), d2(r.gross),
+    r.reservePct, d2(r.reserveCents), d2(r.spendable), Number(r.miles).toFixed(1), d2(r.gasCents), r.notes, r.edited ? t("yes") : t("no")]));
+  const x = Calc.totals(list);
+  const base = list.reduce((s,r)=>s+r.baseCents,0), tips = list.reduce((s,r)=>s+r.tipsCents,0);
+  rows.push([t("csvTotal"), "", "", (x.minutes/60).toFixed(2), d2(base), d2(tips), d2(x.gross), "", d2(x.reserve), d2(x.spendable), x.miles.toFixed(1), d2(x.gas), "", ""]);
+  return rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
+}
+let downloadsApi = null;
+try { if (window.claude && typeof window.claude.use === "function") window.claude.use("downloads").then(d => { downloadsApi = d; }, () => {}); } catch(e) {}
+function markBackup(){ if (Store.mode === "real") Store.setPrefs({ lastBackup: Date.now() }); }
+async function downloadCsv(){
+  const filename = `flex-driver-hub-${todayIso()}.csv`;
+  try {
+    if (downloadsApi){ await downloadsApi.save({ filename, data: buildCsv() }); markBackup(); return; }
+    const blob = new Blob([buildCsv()], {type:"text/csv"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+    markBackup();
+  } catch(e) { /* declined or blocked: the copy box stays open as the fallback */ }
+}
+
+/* =========================================================
+   6. CHECKS — the known example week from the build plan
+   ========================================================= */
+function runChecks(){
+  const out = [], ck = (key, pass, detail) => out.push({key, pass, detail});
+  const wk = [["08:00","12:30"],["13:00","17:15"],["21:00","01:30"]].map(([s,e])=>Calc.lengthMin(s,e));
+  ck("chkLengths", wk.join(",")==="270,255,270", wk.map(m=>(m/60)+" h").join(" + "));
+  const total = wk.reduce((a,b)=>a+b,0), hl = Calc.hoursLeft(2400, total);
+  ck("chkHours", total===795 && !hl.over && hl.text==="26.8", `${total/60} h → ${hl.text}`);
+  const ov = Calc.hoursLeft(2400, 2700);
+  ck("chkOver", ov.over && ov.text==="5.0", `45 h → ${ov.text} ${ov.over ? "over" : "left"}`);
+  const g = Calc.cents(60)+Calc.cents(10), r = Calc.reserve(g,25);
+  ck("chkReserve", g===7000 && r===1750 && g-r===5250, `${g/100} × 25% = ${(r/100).toFixed(2)} · ${((g-r)/100).toFixed(2)}`);
+  const r2 = Calc.reserve(Calc.cents(83.47), 27.5);
+  ck("chkReserveOdd", r2===2295, `83.47 × 27.5% = ${(r2/100).toFixed(2)}`);
+  const sun = Calc.weekStart("2026-01-04",1), mon = Calc.weekStart("2026-01-05",1);
+  ck("chkWeek", sun==="2025-12-29" && mon==="2026-01-05", `${sun} ≠ ${mon}`);
+  const sun0 = Calc.weekStart("2026-01-04",0), mon0 = Calc.weekStart("2026-01-05",0);
+  ck("chkWeekSun", sun0===mon0 && sun0==="2026-01-04", `${sun0} = ${mon0}`);
+  return out;
+}
+
+/* =========================================================
+   7. EVENTS
+   ========================================================= */
+const isNonNeg = v => v.trim() !== "" && Number.isFinite(Number(v)) && Number(v) >= 0;
+
+function readForm(){
+  const f = document.getElementById("routeForm"); if (!f) return null;
+  const g = id => f.querySelector("#"+id).value;
+  return { date:g("date"), start:g("start"), end:g("end"), base:g("base"), tips:g("tips"), miles:g("miles"), gas:g("gas"), notes:g("notes"), reservePct:g("reservePct") };
+}
+
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]");
+  if (!el) return;
+  if (el.dataset.act === "modal-cancel" && e.target.closest("[data-stop]") && !e.target.closest('button[data-act="modal-cancel"]')) return;
+  const act = el.dataset.act;
+  if (act === "go"){ const v = el.dataset.view; if (v === "add"){ ui.editId = null; go("form"); } else go(v); }
+  else if (act === "edit"){ ui.editId = el.dataset.id; go("form"); }
+  else if (act === "cancel-form"){ go(ui.editId ? "routes" : "home"); ui.editId = null; }
+  else if (act === "ask-delete"){
+    const r = Store.get(el.dataset.id); if (!r) return;
+    ui.modal = { title:t("confirmDeleteTitle"), body:t("confirmDeleteBody",{route: `${fmtDate(r.date)}, ${fmtTime(r.start)} – ${fmtTime(r.end)}`}), ok:t("confirmDeleteBtn"), danger:true,
+      run:()=>{ Store.remove(r.id); toast(t("deleted")); } };
+    renderModal();
+  }
+  else if (act === "ask-recalc"){
+    const v = document.getElementById("sReservePct").value;
+    if (!isNonNeg(v) || Number(v) > 100){ ui.errors = {sReservePct:"errNum"}; render(); return; }
+    const pct = Number(v), n = Store.routes().length;
+    ui.modal = { title:t("recalcTitle"), body:t("recalcBody",{n, pct}), ok:t("recalcBtn"), danger:false,
+      run:()=>{ Store.saveSettings({reservePct:pct, reserveSet:true}); const c = Store.recalcAll(pct); toast(t("recalcDone",{n:c})); } };
+    renderModal();
+  }
+  else if (act === "modal-ok"){ const m = ui.modal; ui.modal = null; m && m.run(); render(); }
+  else if (act === "modal-alt"){ const m = ui.modal; ui.modal = null; m && m.altRun && m.altRun(); render(); }
+  else if (act === "mode"){ Store.setPrefs({ mode: el.dataset.mode }); ui.checks = null; go(ui.view === "form" ? "home" : ui.view); }
+  else if (act === "week"){ const st = Number(el.dataset.step); ui.weekOffset = st === 0 ? 0 : Math.max(0, ui.weekOffset + st); render(); }
+  else if (act === "cancel-review"){ ui.review = null; go("form"); }
+  else if (act === "save-review"){ saveReview(); }
+  else if (act === "reset-demo"){ Store.resetDemo(); toast(t("resetDemoDone")); render(); }
+  else if (act === "modal-cancel"){ ui.modal = null; renderModal(); }
+  else if (act === "export"){ ui.csvOpen = true; render(); downloadCsv(); }
+  else if (act === "go-export"){ go("routes"); ui.csvOpen = true; render(); }
+  else if (act === "download-csv"){ downloadCsv(); }
+  else if (act === "close-csv"){ ui.csvOpen = false; render(); }
+  else if (act === "copy-csv"){
+    const ta = document.getElementById("csvText");
+    const done = ok => { if (ok) markBackup(); toast(ok ? t("copied") : t("copyFail")); };
+    try { navigator.clipboard.writeText(ta.value).then(()=>done(true), ()=>{ ta.select(); done(false); }); }
+    catch(err){ ta.select(); done(false); }
+  }
+  else if (act === "lang"){ Store.saveSettings({lang: el.dataset.lang}); render(); }
+  else if (act === "run-checks"){ ui.checks = runChecks(); render(); }
+});
+
+document.addEventListener("keydown", e => { if (e.key === "Escape" && ui.modal){ ui.modal = null; renderModal(); } });
+
+document.addEventListener("input", e => {
+  if (e.target.dataset && e.target.dataset.rv !== undefined && ui.review){
+    const it = ui.review.items[Number(e.target.dataset.rv)];
+    it[e.target.dataset.k] = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    return;
+  }
+  if (!e.target.closest("#routeForm")) return;
+  const d = readForm(); ui.draft = d;
+  document.getElementById("preview").innerHTML = previewHtml(d);
+});
+
+document.addEventListener("submit", e => {
+  e.preventDefault();
+  if (e.target.id === "routeForm"){
+    const d = readForm(), err = {};
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d.date)) err.date = "errDate";
+    if (!d.start || !d.end) err.start = "errTime";
+    else if (d.start === d.end) err.start = "errSame";
+    if (!isNonNeg(d.base)) err.base = "errBase";
+    ["tips","gas"].forEach(k=>{ if (d[k].trim() !== "" && !isNonNeg(d[k])) err[k] = "errNum"; });
+    if (d.miles.trim() !== "" && !isNonNeg(d.miles)) err.miles = "errNum";
+    if (!isNonNeg(d.reservePct) || Number(d.reservePct) > 100) err.reservePct = "errNum";
+    if (Object.keys(err).length){ ui.errors = err; ui.draft = d; render(); const first = document.querySelector('[aria-invalid="true"]'); first && first.focus(); return; }
+    const res = Store.upsert({ id: ui.editId || undefined, date:d.date, start:d.start, end:d.end,
+      baseCents:Calc.cents(d.base), tipsCents:Calc.cents(d.tips||0), miles: Math.round(Number(d.miles||0)*10)/10,
+      gasCents:Calc.cents(d.gas||0), notes:d.notes.trim(), reservePct:Number(d.reservePct) });
+    toast(t(res)); const back = ui.editId ? "routes" : "home"; ui.editId = null; go(back);
+  }
+  if (e.target.id === "settingsForm"){
+    const p = document.getElementById("sReservePct").value, h = document.getElementById("sTarget").value, err = {};
+    if (!isNonNeg(p) || Number(p) > 100) err.sReservePct = "errNum";
+    if (!isNonNeg(h) || Number(h) <= 0) err.sTarget = "errNum";
+    if (Object.keys(err).length){ ui.errors = err; render(); return; }
+    const pct = Number(p);
+    Store.saveSettings({ reservePct:pct, reserveSet: Store.settings.reserveSet || pct !== 0 || String(p).trim() !== "0",
+      targetHours:Number(h), weekStart:Number(document.getElementById("sWeekStart").value) });
+    ui.errors = {}; toast(t("settingsSaved")); render();
+  }
+});
+
+/* =========================================================
+   7b. SCREENSHOT READER — reads the driver's own screenshot on the phone
+   ========================================================= */
+const MONTHS = {jan:0,ene:0,feb:1,mar:2,apr:3,abr:3,may:4,jun:5,jul:6,aug:7,ago:7,sep:8,sept:8,oct:9,nov:10,dec:11,dic:11};
+function guessYear(m, d){
+  const now = new Date(); let y = now.getFullYear();
+  if (new Date(y, m, d) > now) y -= 1;   // screenshots are of past work
+  return y;
+}
+function findDate(line){
+  const low = line.toLowerCase(); let m;
+  if (/\b(today|hoy)\b/.test(low)) return todayIso();
+  if (/\b(yesterday|ayer)\b/.test(low)) return Calc.addDays(todayIso(), -1);
+  if ((m = low.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sept?|oct|nov|dec|ene|abr|ago|dic)[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s*(\d{4}))?/))){
+    const mo = MONTHS[m[1]], d = +m[2]; if (d < 1 || d > 31) return null;
+    return Calc.iso(new Date(m[3] ? +m[3] : guessYear(mo, d), mo, d));
+  }
+  if ((m = low.match(/\b(\d{1,2})\s+de\s+(ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)[a-z]*\.?(?:\s+(?:de\s+)?(\d{4}))?/))){
+    const mo = MONTHS[m[2]], d = +m[1]; if (d < 1 || d > 31) return null;
+    return Calc.iso(new Date(m[3] ? +m[3] : guessYear(mo, d), mo, d));
+  }
+  if ((m = low.match(/(?:^|[^\d$.])(\d{1,2})\/(\d{1,2})(?:\/(\d{2}|\d{4}))?(?![\d.])/))){
+    const mo = +m[1]-1, d = +m[2]; if (mo < 0 || mo > 11 || d < 1 || d > 31) return null;
+    const y = m[3] ? (m[3].length === 2 ? 2000 + +m[3] : +m[3]) : guessYear(mo, d);
+    return Calc.iso(new Date(y, mo, d));
+  }
+  return null;
+}
+const hm = (h, mi, ap) => { let H = (+h) % 12; if (/p/i.test(ap)) H += 12; return String(H).padStart(2,"0") + ":" + String(+(mi || 0)).padStart(2,"0"); };
+function parseShot(text){
+  const lines = String(text).split(/\n/).map(l => l.replace(/[|]/g," ").trim()).filter(Boolean);
+  const timeRe = /(\d{1,2})(?::(\d{2}))?\s*([ap])\.?\s*m\.?\s*(?:-|–|—|to|a)\s*(\d{1,2})(?::(\d{2}))?\s*([ap])\.?\s*m\.?/i;
+  const moneyRe = /\$\s?(\d{1,4}(?:,\d{3})*(?:\.\d{2})?)/g;
+  let cur = null; const items = []; let pending = [];
+  const take = (it, line, amt) => {
+    const low = line.toLowerCase();
+    if (/tip|propina/.test(low)) it.tips = +((it.tips || 0) + amt).toFixed(2);
+    else if (/total/.test(low)) it.total = amt;
+    else if (/base|block|bloque|offer|oferta|pay|pago/.test(low) || it.base === null) { if (it.base === null) it.base = amt; else if (it.total === null) it.total = amt; }
+    else if (it.total === null) it.total = amt;
+  };
+  for (const line of lines){
+    const d = findDate(line); if (d) cur = d;
+    const tm = line.match(timeRe);
+    if (tm){
+      const it = { date: cur || todayIso(), start: hm(tm[1],tm[2],tm[3]), end: hm(tm[4],tm[5],tm[6]), base:null, tips:null, total:null };
+      items.push(it);
+      pending.forEach(([l,a]) => take(it, l, a)); pending = [];
+    }
+    const amts = [...line.matchAll(moneyRe)].map(x => Number(x[1].replace(/,/g,"")));
+    if (!amts.length) continue;
+    const rest = tm ? line.replace(timeRe, "") : line;
+    const amt = amts[amts.length-1];
+    if (items.length) take(items[items.length-1], rest, amt);
+    else pending.push([rest, amt]);
+  }
+  if (!items.length && pending.length){   // amounts but no times: still offer one route to finish by hand
+    const it = { date: cur || todayIso(), start:"", end:"", base:null, tips:null, total:null };
+    pending.forEach(([l,a]) => take(it, l, a)); items.push(it);
+  }
+  return items.map(it => {
+    let base = it.base, tips = it.tips;
+    if (it.total !== null && base !== null && tips === null && it.total > base) tips = +(it.total - base).toFixed(2);
+    if (base === null && it.total !== null) base = +(it.total - (tips || 0)).toFixed(2);
+    return { keep:true, date: it.date, start: it.start, end: it.end, base: base === null ? "" : base.toFixed(2), tips: (tips || 0).toFixed(2), miles:"", gas:"0.00" };
+  });
+}
+
+let ocrScript = null;
+function loadOcr(){
+  if (window.Tesseract) return Promise.resolve(window.Tesseract);
+  if (!ocrScript) ocrScript = new Promise((res, rej) => {
+    const sc = document.createElement("script");
+    sc.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+    sc.onload = () => window.Tesseract ? res(window.Tesseract) : rej(new Error("missing"));
+    sc.onerror = () => { ocrScript = null; rej(new Error("load")); };
+    document.head.appendChild(sc);
+  });
+  return ocrScript;
+}
+function prepImage(file){   // grayscale, flip dark mode to light, enlarge small screenshots
+  return new Promise((res) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      try {
+        const scale = img.width < 1000 ? 2 : 1;
+        const c = document.createElement("canvas"); c.width = img.width*scale; c.height = img.height*scale;
+        const x = c.getContext("2d"); x.drawImage(img, 0, 0, c.width, c.height);
+        const d = x.getImageData(0, 0, c.width, c.height), px = d.data; let sum = 0;
+        for (let i = 0; i < px.length; i += 4){ const g = 0.299*px[i] + 0.587*px[i+1] + 0.114*px[i+2]; px[i] = px[i+1] = px[i+2] = g; sum += g; }
+        if (sum / (px.length/4) < 110) for (let i = 0; i < px.length; i += 4){ px[i] = px[i+1] = px[i+2] = 255 - px[i]; }
+        x.putImageData(d, 0, 0); URL.revokeObjectURL(url); res(c);
+      } catch(e) { URL.revokeObjectURL(url); res(file); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); res(file); };
+    img.src = url;
+  });
+}
+async function readShots(files){
+  const status = msg => { const el = document.getElementById("shotStatus"); if (el) el.textContent = msg; };
+  status(t("shotLoading"));
+  let T, worker;
+  try { T = await loadOcr(); } catch(e) { status(t("shotFail")); toast(t("shotFail")); return; }
+  let i = 0;
+  try {
+    worker = await T.createWorker("eng", 1, { logger: m => { if (m.status === "recognizing text") status(t("shotReading", {i, n: files.length, p: Math.round(m.progress*100)})); } });
+    let raw = "";
+    for (const f of files){ i++; status(t("shotReading", {i, n: files.length, p: 0})); const { data } = await worker.recognize(await prepImage(f)); raw += data.text + "\n"; }
+    await worker.terminate();
+    const items = parseShot(raw);
+    if (!items.length){ status(t("shotNone")); toast(t("shotNone")); return; }
+    ui.review = { items, raw, errors: {} };
+    go("review");
+  } catch(e) {
+    try { worker && worker.terminate(); } catch(_) {}
+    status(t("shotFail")); toast(t("shotFail"));
+  }
+}
+function saveReview(){
+  const r = ui.review; if (!r) return;
+  const kept = r.items.map((it, i) => [it, i]).filter(([it]) => it.keep);
+  if (!kept.length){ toast(t("reviewNoneChecked")); return; }
+  const errors = {};
+  kept.forEach(([it, i]) => {
+    const e = {};
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(it.date)) e.date = 1;
+    if (!it.start) e.start = 1;
+    if (!it.end || it.end === it.start) e.end = 1;
+    if (!isNonNeg(String(it.base))) e.base = 1;
+    ["tips","gas","miles"].forEach(k => { if (String(it[k]).trim() !== "" && !isNonNeg(String(it[k]))) e[k] = 1; });
+    if (Object.keys(e).length) errors[i] = e;
+  });
+  if (Object.keys(errors).length){ r.errors = errors; render(); window.scrollTo(0,0); return; }
+  const pct = Store.settings.reservePct;
+  kept.forEach(([it]) => Store.upsert({ date: it.date, start: it.start, end: it.end, baseCents: Calc.cents(it.base), tipsCents: Calc.cents(it.tips || 0),
+    miles: Math.round(Number(it.miles || 0)*10)/10, gasCents: Calc.cents(it.gas || 0), notes: "", reservePct: pct }));
+  ui.review = null; toast(t("reviewSaved", {n: kept.length})); go("home");
+}
+
+/* =========================================================
+   8. RESTORE FROM BACKUP CSV
+   ========================================================= */
+function parseCsv(text){
+  text = text.replace(/^\uFEFF/, "");
+  const rows = []; let row = [], cell = "", q = false;
+  for (let i = 0; i < text.length; i++){
+    const c = text[i];
+    if (q){ if (c === '"'){ if (text[i+1] === '"'){ cell += '"'; i++; } else q = false; } else cell += c; }
+    else if (c === '"') q = true;
+    else if (c === ","){ row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r"){ if (c === "\r" && text[i+1] === "\n") i++; row.push(cell); rows.push(row); row = []; cell = ""; }
+    else cell += c;
+  }
+  if (cell !== "" || row.length){ row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim() !== ""));
+}
+function normDate(s){
+  s = String(s||"").trim(); let m;
+  if ((m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))) return `${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`;
+  if ((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/))) return `${m[3].length===2 ? "20"+m[3] : m[3]}-${m[1].padStart(2,"0")}-${m[2].padStart(2,"0")}`;
+  return null;
+}
+function normTime(s){
+  const m = String(s||"").trim().toLowerCase().replace(/\./g,"").match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm|a|p)?$/);
+  if (!m) return null;
+  let h = +m[1]; const mi = +m[2];
+  if (m[3]){ const pm = m[3][0] === "p"; if (h === 12) h = pm ? 12 : 0; else if (pm) h += 12; }
+  if (h > 23 || mi > 59) return null;
+  return String(h).padStart(2,"0") + ":" + String(mi).padStart(2,"0");
+}
+const csvMoney = s => { const n = Number(String(s ?? "").replace(/[$,\s]/g,"")); return Number.isFinite(n) && n >= 0 ? Math.round(n*100) : null; };
+function routesFromCsv(text){
+  const rows = parseCsv(text);
+  if (!rows.length) return { error: "restoreEmpty" };
+  const head = rows[0].map(h => h.trim().toLowerCase());
+  if (![STRINGS.en.csvHeaders, STRINGS.es.csvHeaders].some(k => k.every((h,i) => head[i] === h))) return { error: "restoreBadFile" };
+  const out = []; let bad = 0;
+  rows.slice(1).forEach(r => {
+    if (/^total$/i.test((r[0]||"").trim())) return;
+    const date = normDate(r[0]), start = normTime(r[1]), end = normTime(r[2]);
+    const base = csvMoney(r[4]), tips = csvMoney(r[5] || "0"), pct = Number(r[7]), resv = csvMoney(r[8]);
+    const miles = Number(r[10] || 0), gas = csvMoney(r[11] || "0");
+    if (!date || !start || !end || start === end || base === null || tips === null || !Number.isFinite(pct) || resv === null || gas === null || !Number.isFinite(miles) || miles < 0){ bad++; return; }
+    out.push({ date, start, end, baseCents: base, tipsCents: tips, reservePct: pct, reserveCents: resv,
+      miles: Math.round(miles*10)/10, gasCents: gas, notes: (r[12]||"").trim(),
+      edited: /^(yes|s[ií])$/i.test((r[13]||"").trim()), editedAt: null });
+  });
+  if (!out.length) return { error: "restoreNone" };
+  return { routes: out, bad };
+}
+document.addEventListener("dragover", e => { if (e.target.closest && e.target.closest("#shotCard")) e.preventDefault(); });
+document.addEventListener("drop", e => {
+  if (!e.target.closest || !e.target.closest("#shotCard")) return;
+  e.preventDefault();
+  const files = [...(e.dataTransfer && e.dataTransfer.files || [])].filter(f => /^image\//.test(f.type));
+  if (files.length) readShots(files);
+});
+document.addEventListener("change", e => {
+  if (e.target.id === "shotFile" && e.target.files && e.target.files.length){ const files = [...e.target.files]; e.target.value = ""; readShots(files); return; }
+  if (e.target.dataset && e.target.dataset.k === "keep" && ui.review){ ui.review.items[Number(e.target.dataset.rv)].keep = e.target.checked; return; }
+  if (e.target.id !== "restoreFile" || !e.target.files || !e.target.files[0]) return;
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = () => {
+    const res = routesFromCsv(String(reader.result || ""));
+    e.target.value = "";
+    if (res.error){ toast(t(res.error)); return; }
+    const dates = res.routes.map(r => r.date).sort();
+    ui.modal = {
+      title: t("restoreTitle"),
+      body: t("restoreBody", { n: countLabel(res.routes.length), from: fmtDate(dates[0]), to: fmtDate(dates[dates.length-1]), m: Store.realCount() }),
+      note: res.bad ? t("restoreBodyBad", { b: res.bad }) : "",
+      ok: t("restoreAdd"), alt: t("restoreReplace"),
+      run: () => { const r = Store.importRoutes(res.routes, false); toast(t("restoreDone", { a: r.added, d: r.dup })); },
+      altRun: () => { const r = Store.importRoutes(res.routes, true); toast(t("restoreDone", { a: r.added, d: r.dup })); }
+    };
+    renderModal();
+  };
+  reader.onerror = () => toast(t("restoreBadFile"));
+  reader.readAsText(file);
+});
+
+/* =========================================================
+   9. INSTALLED APP: offline support + ask the phone to keep data
+   ========================================================= */
+try {
+  if ("serviceWorker" in navigator && location.protocol === "https:" && window.top === window.self)
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+} catch(e) {}
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch(e) {}
+
+render();
+</script>
+</body>
+</html>
