@@ -7,6 +7,6 @@ A phone-friendly tracker for Amazon Flex drivers. Drivers type in each route; th
 - English and Spanish.
 
 ## Install on a phone
-Open the site link, then:
+Open https://flexdriverhub.github.io/flex-driver-hub/ then:
 - iPhone (Safari): Share → Add to Home Screen
 - Android (Chrome): ⋮ menu → Install app
