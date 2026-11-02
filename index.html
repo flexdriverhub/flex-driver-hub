@@ -211,6 +211,9 @@ nav.tabs button.add{background:var(--accent);color:var(--accent-ink)}
 .see span:last-child{font-size:20px;line-height:1}
 .dayhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:6px}
 .dayhead h3{font-size:20px}
+.cap-back{display:grid;gap:6px;padding-top:8px;border-top:1px solid var(--line)}
+.cap-row{display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.cap-row b{color:var(--good)}
 .foot-note{font-size:13px;color:var(--muted);text-align:center;padding:0 8px}
 @media (prefers-reduced-motion: no-preference){
   .bar span{transition:width .4s ease}
@@ -308,6 +311,12 @@ const STRINGS = {
     weekHours:"{h} of {target} hours", dayTitle:"{date}", dayNone:"No routes this day.", dayTotal:"Day total",
     prevMonth:"Previous month", nextMonth:"Next month", weeksHeading:"Weeks",
     inTitle:"Put Flex Hub on your home screen",
+    capEyebrow:"40-hour cap · rolling 7 days", capMeta:"{worked} of {target} hours in the last 7 days",
+    capBack:"Hours coming back", capBackRow:"+{h} h", capNoneBack:"No logged hours in the last 7 days.",
+    capNote:"Amazon's limit rolls: each block's hours come back 7 days after it started. Amazon also counts blocks you've accepted but not worked yet. This app only knows the routes you've logged.",
+    sCounter:"Hours counter", optRolling:"Rolling 7 days (like Amazon's cap)", optWeek:"Calendar week (resets on your week-start day)",
+    sCounterHint:"Drivers report Amazon's 40-hour limit counts the last 7 days, not a calendar week. Amazon doesn't publish the exact rule.",
+    chkRolling:"Rolling 7 days counts a route from 6 days ago and drops one from 8 days ago",
     iosOnce:"Apple makes every website do this by hand. It takes 3 taps and you only do it once.",
     iosS1:"In Safari's bar, tap the Share button. If you only see ⋯, tap that first.", iosS2:"Scroll down and tap Add to Home Screen.", iosS3:"Tap Add in the top corner. Then open Flex Hub from your home screen.",
     iosRow:"Add to Home Screen", iosAdd:"Add", inWhy:"It opens like a regular app and keeps your routes saved.",
@@ -434,6 +443,12 @@ const STRINGS = {
     weekHours:"{h} de {target} horas", dayTitle:"{date}", dayNone:"No hay rutas este día.", dayTotal:"Total del día",
     prevMonth:"Mes anterior", nextMonth:"Mes siguiente", weeksHeading:"Semanas",
     inTitle:"Pon Flex Hub en tu pantalla de inicio",
+    capEyebrow:"Límite de 40 horas · últimos 7 días", capMeta:"{worked} de {target} horas en los últimos 7 días",
+    capBack:"Horas que regresan", capBackRow:"+{h} h", capNoneBack:"No hay horas registradas en los últimos 7 días.",
+    capNote:"El límite de Amazon es continuo: las horas de cada bloque regresan 7 días después de que empezó. Amazon también cuenta los bloques que aceptaste pero aún no trabajas. Esta app solo conoce las rutas que registras.",
+    sCounter:"Contador de horas", optRolling:"Últimos 7 días (como el límite de Amazon)", optWeek:"Semana de calendario (se reinicia en tu día de inicio)",
+    sCounterHint:"Los conductores reportan que el límite de 40 horas de Amazon cuenta los últimos 7 días, no una semana de calendario. Amazon no publica la regla exacta.",
+    chkRolling:"Los últimos 7 días cuentan una ruta de hace 6 días y quitan una de hace 8 días",
     iosOnce:"Apple obliga a hacer esto a mano en cualquier sitio web. Son 3 toques y solo se hace una vez.",
     iosS1:"En la barra de Safari, toca el botón Compartir. Si solo ves ⋯, tócalo primero.", iosS2:"Desliza hacia abajo y toca Agregar a pantalla de inicio.", iosS3:"Toca Agregar en la esquina de arriba. Luego abre Flex Hub desde tu pantalla de inicio.",
     iosRow:"Agregar a pantalla de inicio", iosAdd:"Agregar", inWhy:"Se abre como una app normal y mantiene tus rutas guardadas.",
@@ -497,6 +512,14 @@ const Calc = {
     const left = targetMin - workedMin;
     return { over: left < 0, text: (Math.round(Math.abs(left)/6)/10).toFixed(1) };
   },
+  startAt(r){ const [y,m,d] = r.date.split("-").map(Number); const [h,mi] = r.start.split(":").map(Number); return new Date(y, m-1, d, h, mi).getTime(); },
+  rolling(routes, now){
+    const WEEK = 168 * 3600000; let minutes = 0; const back = [];
+    routes.forEach(r => { const st = Calc.startAt(r);
+      if (st <= now && st > now - WEEK){ minutes += r.minutes; back.push({ at: st + WEEK, minutes: r.minutes }); } });
+    back.sort((a, b) => a.at - b.at);
+    return { minutes, back };
+  },
   derive(r){
     const minutes = Calc.lengthMin(r.start, r.end);
     const gross = r.baseCents + r.tipsCents;
@@ -514,13 +537,13 @@ const Calc = {
       Later, swap localStorage for an account backend here.
    ========================================================= */
 const Store = (() => {
-  const PREFS = "fdh.prefs", REAL = "fdh.real", DEMO = "fdh.demo3", OLD = "flexDriverHub.v1";
+  const PREFS = "fdh.prefs", REAL = "fdh.real", DEMO = "fdh.demo5", OLD = "flexDriverHub.v1";
   const mem = {};
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
   const read = k => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : null; } catch(e) { return null; } };
   const write = (k, v) => { mem[k] = v; try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) { /* memory only */ } };
   const get = k => (k in mem) ? mem[k] : (mem[k] = read(k));
-  const defaults = () => ({ reservePct: 0, reserveSet: false, targetHours: 40, weekStart: 1 });
+  const defaults = () => ({ reservePct: 0, reserveSet: false, targetHours: 40, weekStart: 1, counter: "rolling" });
   const valid = d => d && d.settings && Array.isArray(d.routes);
 
   function demoSeed(){
@@ -534,20 +557,19 @@ const Store = (() => {
     };
     return {
       settings: { reservePct: 25, reserveSet: true, targetHours: 40, weekStart: 1 },
-      routes: [
-        [0,"08:00","12:30",72,8,41.2,9.5,"Whole Foods block, 2 stops cancelled"],[1,"13:00","17:15",68,0,38.6,8.75,""],
-        [2,"21:00","01:30",81,14.5,52,11.2,"Night logistics, ran past midnight"],[3,"04:30","07:30",79.5,0,36.1,8.1,""],
-        [5,"10:00","13:30",57,6,33.4,7.4,""],[6,"16:45","19:00",60,0,24.8,5.6,""],[8,"02:15","05:45",91,0,47.5,10.4,""],
-        [9,"07:30","11:00",54,0,29.9,6.8,"Short block, light traffic"],[10,"21:00","23:00",49,0,21.2,4.9,""],
-        [12,"15:00","19:00",76,11,44.7,10.1,""],[13,"02:30","06:00",91,0,48.3,10.6,""],[15,"09:00","12:00",52,4,27.3,6.2,""],
-        [16,"04:30","08:30",88,0,46.9,10.3,""],[17,"13:00","16:30",66,9.25,35.2,7.9,""],[19,"21:00","01:00",84,12,50.4,11,""],
-        [20,"08:00","11:00",54,0,28.1,6.3,""],[22,"02:15","05:45",91,0,47.1,10.4,""],[23,"16:00","19:30",63,7.5,33.8,7.6,""],
-        [24,"10:00","13:00",56,0,30.2,6.8,""],[26,"04:30","07:30",79.5,0,36.4,8.2,""],[27,"18:00","21:00",58,10,31.6,7.1,""],
-        [29,"08:30","12:30",74,5,40.9,9.2,""],[30,"02:30","06:00",91,0,48,10.6,""],[31,"13:30","16:30",57,0,29.7,6.7,""],
-        [33,"21:00","23:00",49,6,22.4,5.1,""],[34,"09:00","13:00",72,0,39.5,8.9,""]
-      ].map(a => mk(...a)),
+      routes: (() => {
+        const p = [];
+        for (let o = 0; o <= 34; o++){
+          const wd = Calc.parseDate(Calc.addDays(today, -o)).getDay();
+          if (wd === 0 || wd === 6) continue;
+          p.push([o,"02:30","06:00",91,0,48,0,""]);
+          p.push([o,"16:00","18:00",50,0,24,0,""]);
+          p.push([o,"21:00","23:00",50,0,22,0,""]);
+        }
+        return p;
+      })().map(a => mk(...a)),
       fillups: [0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34].map((o, i) => ({ id: uid(), date: Calc.addDays(today, -o),
-        amountCents: [2650,2200,2975,2400,3000,2150,2800,2525,2300,2900,2075,2700,2450,3000,2250,2600,2875,2350][i], gallons: null, odometer: null, createdAt: Date.now() }))
+        amountCents: 2500, gallons: null, odometer: null, createdAt: Date.now() }))
     };
   }
   function prefs(){
@@ -698,6 +720,22 @@ function totalsCard(title, list, fuel, kind){
   </section>`;
 }
 
+function capCard(){
+  const s = Store.settings, now = Date.now(), target = s.targetHours * 60;
+  const r = Calc.rolling(Store.routes(), now), hl = Calc.hoursLeft(target, r.minutes);
+  const pct = target > 0 ? Math.min(100, r.minutes / target * 100) : 100;
+  const when = ms => new Intl.DateTimeFormat(loc(), { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" }).format(new Date(ms));
+  const rows = r.back.slice(0, 4).map(b => `<div class="cap-row num"><span>${esc(when(b.at))}</span><b>${esc(t("capBackRow", { h: one(b.minutes/60) }))}</b></div>`).join("");
+  return `<section class="hours" aria-live="polite">
+    <div class="eyebrow">${esc(t("capEyebrow"))}</div>
+    <div class="big num ${hl.over ? "over" : ""}">${esc(t(hl.over ? "hoursOver" : "hoursLeft", { n: hl.text }))}</div>
+    <div class="bar ${hl.over ? "over" : ""}" role="progressbar" aria-valuemin="0" aria-valuemax="${s.targetHours}" aria-valuenow="${(r.minutes/60).toFixed(1)}"><span style="width:${pct}%"></span></div>
+    <div class="meta num">${esc(t("capMeta", { worked: one(r.minutes/60), target: s.targetHours }))}</div>
+    <div class="cap-back"><div class="eyebrow">${esc(t("capBack"))}</div>${rows || `<p class="mutedp">${esc(t("capNoneBack"))}</p>`}</div>
+    <p class="mutedp" style="font-size:13px">${esc(t("capNote"))}</p>
+  </section>`;
+}
+
 function viewHome(){
   const s = Store.settings, p = periods();
   const worked = Calc.totals(p.week).minutes, target = s.targetHours * 60;
@@ -708,12 +746,12 @@ function viewHome(){
   return header(t("appName"), sub) + `<main>
     ${banners()}
     ${installCard("home")}
-    <section class="hours" aria-live="polite">
+    ${(s.counter || "rolling") === "rolling" && ui.weekOffset === 0 ? capCard() : `<section class="hours" aria-live="polite">
       <div class="eyebrow">${esc(t("hoursEyebrow"))}</div>
       <div class="big num ${hl.over ? "over" : ""}">${esc(t(hl.over ? "hoursOver" : "hoursLeft", {n: hl.text}))}</div>
       <div class="bar ${hl.over ? "over" : ""}" role="progressbar" aria-valuemin="0" aria-valuemax="${s.targetHours}" aria-valuenow="${(worked/60).toFixed(1)}"><span style="width:${pct}%"></span></div>
       <div class="meta num">${esc(t("hoursWorked", {worked: one(worked/60), target: s.targetHours}))}</div>
-    </section>
+    </section>`}
     <div class="row-actions" style="justify-content:space-between">
       <button type="button" class="btn" data-act="week" data-step="1">${esc(t("prevWeek"))}</button>
       ${ui.weekOffset > 0 ? `<button type="button" class="btn" data-act="week" data-step="-1">${esc(t("nextWeek"))}</button>` : ""}
@@ -849,6 +887,7 @@ function viewSettings(){
     <form id="settingsForm" class="card" novalidate>
       ${field("sReservePct","sReserve", `<input id="sReservePct" inputmode="decimal" value="${esc(s.reservePct)}"${inv("sReservePct")}>`, t("sReserveHint"))}
       ${field("sTarget","sTarget", `<input id="sTarget" inputmode="numeric" value="${esc(s.targetHours)}"${inv("sTarget")}>`)}
+      ${field("sCounter","sCounter", `<select id="sCounter"><option value="rolling" ${(s.counter || "rolling") === "rolling" ? "selected" : ""}>${esc(t("optRolling"))}</option><option value="week" ${s.counter === "week" ? "selected" : ""}>${esc(t("optWeek"))}</option></select>`, t("sCounterHint"))}
       ${field("sWeekStart","sWeekStart", `<select id="sWeekStart">${opts}</select>`, t("sWeekStartHint"))}
       <button type="submit" class="btn primary block">${esc(t("sSave"))}</button>
       <button type="button" class="btn block" data-act="ask-recalc">${esc(t("recalc"))}</button>
@@ -1158,6 +1197,11 @@ function viewHistory(){
         <h2>${esc(fmtMonth)}</h2>
         <button type="button" class="btn" data-act="hist-month" data-step="1" aria-label="${esc(t("nextMonth"))}">›</button>
       </div>
+      ${(() => { const ml = all.filter(r => r.date.slice(0,7) === ym), mx = Calc.totals(ml); mx.gas += fuelSum(fu.filter(f => f.date.slice(0,7) === ym));
+        return mx.count ? `<div class="tot-grid num"><div><div class="k">${esc(t("gross"))}</div><div class="v">${money(mx.gross)}</div></div>
+          <div><div class="k">${esc(t("reserve"))}</div><div class="v">${money(mx.reserve)}</div></div>
+          <div><div class="k">${esc(t("spendable"))}</div><div class="v spend">${money(mx.spendable)}</div></div></div>
+          <div class="tot-foot num" style="margin-top:0"><span>${esc(countLabel(mx.count))}</span><span>${one(mx.minutes/60)} h</span><span>${esc(t("gas"))} <b>${money(mx.gas)}</b></span><span>${esc(t("afterGas"))} <b>${money(mx.spendable - mx.gas)}</b></span></div>` : ""; })()}
       <div class="cal">${cal}</div>
     </section>
     ${dayPanel}
@@ -1267,6 +1311,10 @@ function runChecks(){
   ck("chkWeek", sun==="2025-12-29" && mon==="2026-01-05", `${sun} ≠ ${mon}`);
   const sun0 = Calc.weekStart("2026-01-04",0), mon0 = Calc.weekStart("2026-01-05",0);
   ck("chkWeekSun", sun0===mon0 && sun0==="2026-01-04", `${sun0} = ${mon0}`);
+  const nowT = new Date(2026, 0, 12, 12, 0).getTime();
+  const mkR = (date, start, end) => ({ date, start, end, minutes: Calc.lengthMin(start, end) });
+  const rr = Calc.rolling([mkR("2026-01-06","10:00","14:00"), mkR("2026-01-04","10:00","14:00")], nowT);
+  ck("chkRolling", rr.minutes === 240 && rr.back.length === 1, `${rr.minutes/60} h`);
   return out;
 }
 
@@ -1401,7 +1449,7 @@ document.addEventListener("submit", e => {
     if (Object.keys(err).length){ ui.errors = err; render(); return; }
     const pct = Number(p);
     Store.saveSettings({ reservePct:pct, reserveSet: Store.settings.reserveSet || pct !== 0 || String(p).trim() !== "0",
-      targetHours:Number(h), weekStart:Number(document.getElementById("sWeekStart").value) });
+      targetHours:Number(h), weekStart:Number(document.getElementById("sWeekStart").value), counter: document.getElementById("sCounter").value });
     ui.errors = {}; toast(t("settingsSaved")); render();
   }
 });
