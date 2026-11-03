@@ -264,7 +264,7 @@ const STRINGS = {
     noRoutes:"No routes yet. Tap Add route after your next block.",
     settingsTitle:"Settings",
     sReserve:"Tax reserve percentage",
-    sReserveHint:"Meant to cover federal self-employment tax, federal income tax, and Georgia income tax. Confirm the number with a tax professional. Changing it only affects new routes.",
+    sReserveHint:"Meant to cover federal self-employment tax, federal income tax, and your state's income tax. Confirm the number with a tax professional. Changing it only affects new routes.",
     sTarget:"Weekly hours target", sWeekStart:"Week starts on",
     sWeekStartHint:"Weeks reset at 12:00 a.m. on this day. Changing it regroups routes but never changes them.",
     sLang:"Language", sSave:"Save settings", settingsSaved:"Settings saved",
@@ -311,6 +311,13 @@ const STRINGS = {
     weekHours:"{h} of {target} hours", dayTitle:"{date}", dayNone:"No routes this day.", dayTotal:"Day total",
     prevMonth:"Previous month", nextMonth:"Next month", weeksHeading:"Weeks",
     inTitle:"Put Flex Hub on your home screen",
+    sState:"Your state", sStatePick:"Pick your state",
+    sugTitle:"Suggested starting point for {state}: {pct}%",
+    sugNone:"{state} has no state income tax on wages, so this covers federal self-employment tax and federal income tax.",
+    sugMid:"Meant to cover federal self-employment tax, federal income tax, and {state} income tax for most drivers.",
+    sugHigh:"{state} has a higher state income tax, so the starting point is higher.",
+    sugNote:"A common starting point, not a promise. Your real number depends on your total income. Confirm it with a tax professional.",
+    sugUse:"Use {pct}%", sugUsed:"Reserve set to {pct}%",
     capEyebrow:"40-hour cap · rolling 7 days", capMeta:"{worked} of {target} hours in the last 7 days",
     capBack:"Hours coming back", capBackRow:"+{h} h", capNoneBack:"No logged hours in the last 7 days.",
     capNote:"Amazon's limit rolls: each block's hours come back 7 days after it started. Amazon also counts blocks you've accepted but not worked yet. This app only knows the routes you've logged.",
@@ -396,7 +403,7 @@ const STRINGS = {
     noRoutes:"Todavía no hay rutas. Toca Agregar ruta después de tu próximo bloque.",
     settingsTitle:"Ajustes",
     sReserve:"Porcentaje de reserva para impuestos",
-    sReserveHint:"Para cubrir el impuesto federal de trabajo por cuenta propia, el impuesto federal sobre la renta y el impuesto sobre la renta de Georgia. Confirma el número con un profesional de impuestos. Cambiarlo solo afecta las rutas nuevas.",
+    sReserveHint:"Para cubrir el impuesto federal de trabajo por cuenta propia, el impuesto federal sobre la renta y el impuesto sobre la renta de tu estado. Confirma el número con un profesional de impuestos. Cambiarlo solo afecta las rutas nuevas.",
     sTarget:"Meta de horas por semana", sWeekStart:"La semana empieza el",
     sWeekStartHint:"Las semanas se reinician a las 12:00 a. m. de este día. Cambiarlo reagrupa las rutas, pero nunca las modifica.",
     sLang:"Idioma", sSave:"Guardar ajustes", settingsSaved:"Ajustes guardados",
@@ -443,6 +450,13 @@ const STRINGS = {
     weekHours:"{h} de {target} horas", dayTitle:"{date}", dayNone:"No hay rutas este día.", dayTotal:"Total del día",
     prevMonth:"Mes anterior", nextMonth:"Mes siguiente", weeksHeading:"Semanas",
     inTitle:"Pon Flex Hub en tu pantalla de inicio",
+    sState:"Tu estado", sStatePick:"Elige tu estado",
+    sugTitle:"Punto de partida sugerido para {state}: {pct}%",
+    sugNone:"{state} no cobra impuesto estatal sobre el ingreso de trabajo, así que esto cubre el impuesto federal de trabajo por cuenta propia y el impuesto federal sobre la renta.",
+    sugMid:"Para cubrir el impuesto federal de trabajo por cuenta propia, el impuesto federal sobre la renta y el impuesto sobre la renta de {state} para la mayoría de los conductores.",
+    sugHigh:"{state} tiene un impuesto estatal más alto, así que el punto de partida es más alto.",
+    sugNote:"Es un punto de partida común, no una promesa. Tu número real depende de tu ingreso total. Confírmalo con un profesional de impuestos.",
+    sugUse:"Usar {pct}%", sugUsed:"Reserva fijada en {pct}%",
     capEyebrow:"Límite de 40 horas · últimos 7 días", capMeta:"{worked} de {target} horas en los últimos 7 días",
     capBack:"Horas que regresan", capBackRow:"+{h} h", capNoneBack:"No hay horas registradas en los últimos 7 días.",
     capNote:"El límite de Amazon es continuo: las horas de cada bloque regresan 7 días después de que empezó. Amazon también cuenta los bloques que aceptaste pero aún no trabajas. Esta app solo conoce las rutas que registras.",
@@ -873,6 +887,26 @@ function viewForm(){
   </main>`;
 }
 
+const STATES = [["AL","Alabama"],["AK","Alaska"],["AZ","Arizona"],["AR","Arkansas"],["CA","California"],["CO","Colorado"],["CT","Connecticut"],["DE","Delaware"],["DC","District of Columbia"],["FL","Florida"],["GA","Georgia"],["HI","Hawaii"],["ID","Idaho"],["IL","Illinois"],["IN","Indiana"],["IA","Iowa"],["KS","Kansas"],["KY","Kentucky"],["LA","Louisiana"],["ME","Maine"],["MD","Maryland"],["MA","Massachusetts"],["MI","Michigan"],["MN","Minnesota"],["MS","Mississippi"],["MO","Missouri"],["MT","Montana"],["NE","Nebraska"],["NV","Nevada"],["NH","New Hampshire"],["NJ","New Jersey"],["NM","New Mexico"],["NY","New York"],["NC","North Carolina"],["ND","North Dakota"],["OH","Ohio"],["OK","Oklahoma"],["OR","Oregon"],["PA","Pennsylvania"],["RI","Rhode Island"],["SC","South Carolina"],["SD","South Dakota"],["TN","Tennessee"],["TX","Texas"],["UT","Utah"],["VT","Vermont"],["VA","Virginia"],["WA","Washington"],["WV","West Virginia"],["WI","Wisconsin"],["WY","Wyoming"]];
+const NO_WAGE_TAX = ["AK","FL","NV","NH","SD","TN","TX","WA","WY"];
+const HIGH_TAX = ["CA","HI","NJ","NY","OR","MN","DC","VT"];
+function stateSuggestion(code){
+  if (!code) return null;
+  const name = (STATES.find(x => x[0] === code) || [code, code])[1];
+  if (NO_WAGE_TAX.includes(code)) return { name, pct: 20, why: "sugNone" };
+  if (HIGH_TAX.includes(code)) return { name, pct: 30, why: "sugHigh" };
+  return { name, pct: 25, why: "sugMid" };
+}
+function suggestionBox(code){
+  const sg = stateSuggestion(code); if (!sg) return "";
+  return `<div class="banner info" style="color:var(--ink)">
+    <strong>${esc(t("sugTitle", { state: sg.name, pct: sg.pct }))}</strong>
+    <span class="mutedp">${esc(t(sg.why, { state: sg.name }))}</span>
+    <span class="mutedp" style="font-size:13px">${esc(t("sugNote"))}</span>
+    <button type="button" class="btn primary" style="justify-self:start" data-act="use-suggestion" data-pct="${sg.pct}">${esc(t("sugUse", { pct: sg.pct }))}</button>
+  </div>`;
+}
+
 function viewSettings(){
   const s = Store.settings;
   const opts = t("days").map((n,i)=>`<option value="${i}" ${i===s.weekStart?"selected":""}>${esc(n.charAt(0).toUpperCase()+n.slice(1))}</option>`).join("");
@@ -885,6 +919,8 @@ function viewSettings(){
   return header(t("settingsTitle")) + `<main>
     ${banners()}
     <form id="settingsForm" class="card" novalidate>
+      ${field("sState","sState", `<select id="sState"><option value="">${esc(t("sStatePick"))}</option>${STATES.map(([c, n]) => `<option value="${c}" ${s.state === c ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>`)}
+      <div id="sugBox">${suggestionBox(s.state)}</div>
       ${field("sReservePct","sReserve", `<input id="sReservePct" inputmode="decimal" value="${esc(s.reservePct)}"${inv("sReservePct")}>`, t("sReserveHint"))}
       ${field("sTarget","sTarget", `<input id="sTarget" inputmode="numeric" value="${esc(s.targetHours)}"${inv("sTarget")}>`)}
       ${field("sCounter","sCounter", `<select id="sCounter"><option value="rolling" ${(s.counter || "rolling") === "rolling" ? "selected" : ""}>${esc(t("optRolling"))}</option><option value="week" ${s.counter === "week" ? "selected" : ""}>${esc(t("optWeek"))}</option></select>`, t("sCounterHint"))}
@@ -1374,6 +1410,12 @@ document.addEventListener("click", e => {
       run: () => { Store.removeFillup(f.id); toast(t("fuelDeleted")); } };
     renderModal();
   }
+  else if (act === "use-suggestion"){
+    const pct = Number(el.dataset.pct);
+    Store.saveSettings({ reservePct: pct, reserveSet: true });
+    document.getElementById("sReservePct").value = pct;
+    toast(t("sugUsed", { pct })); render();
+  }
   else if (act === "reset-demo"){ Store.resetDemo(); toast(t("resetDemoDone")); render(); }
   else if (act === "modal-cancel"){ ui.modal = null; renderModal(); }
   else if (act === "export"){ ui.csvOpen = true; render(); downloadCsv(); }
@@ -1675,6 +1717,7 @@ document.addEventListener("drop", e => {
   if (files.length) readShots(files);
 });
 document.addEventListener("change", e => {
+  if (e.target.id === "sState"){ Store.saveSettings({ state: e.target.value }); document.getElementById("sugBox").innerHTML = suggestionBox(e.target.value); return; }
   if (e.target.id === "shotFile" && e.target.files && e.target.files.length){ const files = [...e.target.files]; e.target.value = ""; readShots(files); return; }
   if (e.target.dataset && e.target.dataset.k === "keep" && ui.review){ ui.review.items[Number(e.target.dataset.rv)].keep = e.target.checked; return; }
   if (e.target.id !== "restoreFile" || !e.target.files || !e.target.files[0]) return;
